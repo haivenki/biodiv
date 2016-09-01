@@ -11,9 +11,9 @@
 <title><g:message code="taxonbrowser.taxonomy.browser" /></title>
 
 <style type="text/css">
-.userList{
+/*.userList{
     margin-left:20px;    
-}
+}*/
 .userList img{
     width:20px;
     height:20px;
@@ -113,8 +113,8 @@
             var taxonBrowser = $('.taxonomyBrowser').taxonhierarchy({
                 expandAll:false,
                 controller:"${params.controller?:'namelist'}",
-                action:"${params.action?:'index'}"
-
+                action:"${params.action?:'index'}",
+                variant:"large"
             });	
             /*$("#searchPermission").autofillNames({
                 'appendTo' : '#nameSuggestions',
