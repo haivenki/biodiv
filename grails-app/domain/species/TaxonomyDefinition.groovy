@@ -48,7 +48,7 @@ class TaxonomyDefinition extends ScientificName {
 	def namelistUtilService
 	def activityFeedService
 	def dataSource
-	
+
 	static hasMany = [author:String, year:String, hierarchies:TaxonomyRegistry]
     static mappedBy = [hierarchies:'taxonDefinition']
 
@@ -811,4 +811,9 @@ class TaxonomyDefinition extends ScientificName {
 		TaxonomyRegistry tr = TaxonomyRegistry.findByParentTaxonDefinitionAndClassification(this, ibpClassification)
 		return tr?true:false
 	}
+
+    @Override
+    String toString() {
+        return "<${this.class} : ${id} - ${name}>"
+    }
 }
