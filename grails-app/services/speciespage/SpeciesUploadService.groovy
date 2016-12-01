@@ -115,7 +115,7 @@ class SpeciesUploadService {
 		if(!params.xlsxFileUrl){
 			return ['msg': 'File not found !!!' ]
 		}
-		
+		var searchType = (params.searchType)?params.searchType:'All';
 		File speciesDataFile = saveModifiedSpeciesFile(params)
 		log.debug "THE FILE BEING UPLOADED " + speciesDataFile
 		
@@ -123,7 +123,7 @@ class SpeciesUploadService {
 			return ['msg': 'File not found !!!' ]
 		}
 		
-		def namesReportGenEntry = NamesReportGenerator.create(springSecurityService.currentUser, new Date(), null, speciesDataFile.getAbsolutePath())
+		def namesReportGenEntry = NamesReportGenerator.create(springSecurityService.currentUser, new Date(), null, speciesDataFile.getAbsolutePath(),searchType)
 		
 		return ['msg': 'Names search in progress. Please visit your profile page to view status.' ,namesReportGenEntry:namesReportGenEntry]
 	}
@@ -233,7 +233,7 @@ class SpeciesUploadService {
 		List nameInfoList = MappedSpreadsheetConverter.getNames(speciesDataFile, speciesDataFile)
 		
 		println "------------------ name info list " + nameInfoList
-		File f = NameInfo.writeNamesMapperSheet(nameInfoList, new File(speciesDataFile))  
+		File f = NameInfo.writeNamesMapperSheet(nameInfoList, new File(speciesDataFile),nr.searchType)  
 		
 		nr.updateStatus(UploadLog.Status.SUCCESS)
 		

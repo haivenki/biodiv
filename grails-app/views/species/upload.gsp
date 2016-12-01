@@ -103,6 +103,7 @@
                 
                 </table>
                 <div id="tagHeaders" class="section checklist-slickgrid" style="clear:both;display:none;">
+                    <input type="checkbox" name="searchType" id="searchType" value="IBP"/>IBP only
                 	<button class="btn btn-primary" id="downloadNamesMapper" style="margin-top: 8px; margin-bottom:8px"><g:message code="button.generate" /></button>
                         <table id="tableHeader" border="1">
                         <th class="columnName"><g:message code="upload.column.name" /></th>

@@ -455,6 +455,10 @@ function uploadSpecies(url){
     var hm = getHeaderMetadata();
     delete hm["undefined"];
     var orderedArray = $('#columnOrder').val();
+    var searchType = 'All'
+    if(document.getElementById('searchType').checked){
+        searchType = document.getElementById('searchType').value;
+    }
     orderedArray = JSON.stringify(orderedArray);
     var headerMarkers = JSON.stringify(hm);
     if(url == undefined)
@@ -463,7 +467,7 @@ function uploadSpecies(url){
         url : url,
         type : 'post', 
         dataType: 'json',
-        data : {'headerMarkers': headerMarkers , 'xlsxFileUrl' : xlsxFileUrl, 'gridData' : gData, 'imagesDir': $("#imagesDir").val(), 'writeContributor': 'true','orderedArray' : orderedArray },
+        data : {'headerMarkers': headerMarkers , 'searchType' : searchType, 'xlsxFileUrl' : xlsxFileUrl, 'gridData' : gData, 'imagesDir': $("#imagesDir").val(), 'writeContributor': 'true','orderedArray' : orderedArray },
         success : function(data) {
            // $("#downloadSpeciesFile input[name='downloadFile']").val(data.downloadFile);
            // $("#downloadErrorFile input[name='downloadFile']").val(data.errorFile);

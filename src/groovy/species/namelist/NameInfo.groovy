@@ -81,7 +81,7 @@ class NameInfo {
 		}
 	}
 	
-	public static File writeNamesMapperSheet(List nameInfoList, File f) {
+	public static File writeNamesMapperSheet(List nameInfoList, File f,String searchType='All') {
 		println "------------------------------- file -----------" + f
 		if(!nameInfoList){
 			return
@@ -110,7 +110,7 @@ class NameInfo {
 		NamelistService nmService = new NamelistService()
 		
 		int sIndex = 2
-		Map content = nmService.nameMapper(nameInfoList)
+		Map content = nmService.nameMapper(nameInfoList,searchType)
 		writeSheet(f, content, TAXON_NAMES_SHEET, sIndex++)
 		
 		content = nmService.nameMapper(taxonList)

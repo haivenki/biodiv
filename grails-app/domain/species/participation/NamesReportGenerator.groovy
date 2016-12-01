@@ -15,7 +15,7 @@ class NamesReportGenerator {
 	Date endDate;
 	Status status;
 	String filePath;
-	
+	String searchType;
 	
 	static belongsTo = [author:SUser];
 	
@@ -27,8 +27,8 @@ class NamesReportGenerator {
 		version : false;
     }
 	
-	static NamesReportGenerator create(SUser author, Date startDate, Date endDate, String filePath, Status status = Status.SCHEDULED){
-		NamesReportGenerator sbu = new NamesReportGenerator (author:author, filePath:filePath, startDate:startDate, endDate:endDate, status:status)
+	static NamesReportGenerator create(SUser author, Date startDate, Date endDate, String filePath, String searchType = 'All', Status status = Status.SCHEDULED){
+		NamesReportGenerator sbu = new NamesReportGenerator (author:author, filePath:filePath, startDate:startDate, searchType:searchType, endDate:endDate, status:status)
 		if(!sbu.save(flush:true)){
 			sbu.errors.allErrors.each { println it }
 			return null

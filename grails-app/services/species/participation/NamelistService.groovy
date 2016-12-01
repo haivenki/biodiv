@@ -172,7 +172,7 @@ class NamelistService extends AbstractObjectService {
 	 * @param rank
 	 * @return
 	 */
-	public Map nameMapper(List<NameInfo> names) {
+	public Map nameMapper(List<NameInfo> names,String searchType='All') {
 		
 		Map finalResult = [:]
 		NamesParser namesParser = new NamesParser();
@@ -204,7 +204,7 @@ class NamelistService extends AbstractObjectService {
 						tmpRes << ['match':'IBP', 'name':t.name, 'rank':ScientificName.TaxonomyRank.getTRFromInt(t.rank).value(), 'status': t.status.value(), 'group' : t.group?.name, 'position':t.position.value(),'id':t.id]
 					}
 					
-					if(!ibpResult){
+					if(!ibpResult && searchType == 'All'){
 						List colResult = searchCOL(name.canonicalForm, 'name');
 						colResult.each { t ->
 							boolean addToList = true
