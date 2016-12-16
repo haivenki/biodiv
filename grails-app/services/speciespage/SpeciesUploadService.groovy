@@ -115,7 +115,7 @@ class SpeciesUploadService {
 		if(!params.xlsxFileUrl){
 			return ['msg': 'File not found !!!' ]
 		}
-		var searchType = (params.searchType)?params.searchType:'All';
+		def searchType = (params.searchType)?params.searchType:'All';
 		File speciesDataFile = saveModifiedSpeciesFile(params)
 		log.debug "THE FILE BEING UPLOADED " + speciesDataFile
 		

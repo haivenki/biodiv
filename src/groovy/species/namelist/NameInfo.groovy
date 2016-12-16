@@ -138,7 +138,7 @@ class NameInfo {
 			
 			//writing header
 			Row row =  sheet.createRow(0);
-			List arr = ['Name', 'Index', 'Source Name', 'Match Found', 'Matched Name' ,'Rank', 'Status', 'Group', 'Position', 'Id', 'Target Position' , 'Target Status']
+			List arr = ['Name', 'Index', 'Source Name', 'Match Found', 'Matched Name' ,'Rank', 'Status', 'Group', 'Position', 'Id', 'Accepted Name', 'Target Position' , 'Target Status']
 			Cell cell;
 			int k = 0;
 			arr.each {
@@ -151,7 +151,7 @@ class NameInfo {
 			int rowNum = 1;
 			content.each { NameInfo name, List result ->
 				int nameIndex = name.sourceIndex
-				//println "-------------------------- name " + name.name + "  result " + result
+				// println "-------------------------- name " + name.name + "  result " + result
 				if(!result){
 					//println "--------------- inside"
 					row = sheet.createRow(rowNum++);
@@ -169,6 +169,8 @@ class NameInfo {
 						cell = row.getCell(5, Row.CREATE_NULL_AS_BLANK);
 						cell.setCellValue(ScientificName.TaxonomyRank.getTRFromInt(name.rank)?.value());
 					}
+					cell = row.getCell(10,Row.CREATE_NULL_AS_BLANK);
+					cell.setCellValue(name.acceptedName);
 				}else{
 					result.each { Map r ->
 						row = sheet.createRow(rowNum++);
@@ -184,7 +186,6 @@ class NameInfo {
 							cell.setCellValue(v1);
 							i++;
 						}
-						
 					}
 				}
 			}

@@ -192,7 +192,7 @@ class NamelistService extends AbstractObjectService {
 					List tmpRes = []
 					if(!name || !name.canonicalForm) {
 						log.debug "Name is not parsed by Names Parser " + name
-						tmpRes << ['match':'None', 'name':'', 'rank':'', 'status': '', 'group' : '', 'position':'','id':'']
+						tmpRes << ['match':'None', 'name':'', 'rank':'', 'status': '', 'group' : '', 'position':'','id':'','acceptedName':'']
 						finalResult[names[i]] = tmpRes
 						// return works here as continue
 						return
@@ -200,8 +200,13 @@ class NamelistService extends AbstractObjectService {
 					
 					List ibpResult = searchIBP(name.canonicalForm, name.authorYear, null, names[i].rank, false, name.normalizedForm, true)
 					ibpResult.each { TaxonomyDefinition t ->
-		                t = TaxonomyDefinition.get(t.id)
-						tmpRes << ['match':'IBP', 'name':t.name, 'rank':ScientificName.TaxonomyRank.getTRFromInt(t.rank).value(), 'status': t.status.value(), 'group' : t.group?.name, 'position':t.position.value(),'id':t.id]
+		                t = TaxonomyDefinition.get(7365L)
+		                def getAcceptedNames = ""
+		                if(t.status == NameStatus.SYNONYM){
+		                	def taxonAcceptedNames = t.fetchAcceptedNames().collect{it.name}
+		                	getAcceptedNames = taxonAcceptedNames.join(", ");
+		                }
+						tmpRes << ['match':'IBP', 'name':t.name, 'rank':ScientificName.TaxonomyRank.getTRFromInt(t.rank).value(), 'status': t.status.value(), 'group' : t.group?.name, 'position':t.position.value(),'id':t.id,'acceptedName':getAcceptedNames]
 					}
 					
 					if(!ibpResult && searchType == 'All'){
@@ -222,7 +227,7 @@ class NamelistService extends AbstractObjectService {
 								}
 							}
 							if(addToList){
-								tmpRes << ['match':'COL', 'name':t.name, 'rank':t.rank, 'status': t.colNameStatus, 'group' : t.group, 'position':'WORKING','id':t.externalId]
+								tmpRes << ['match':'COL', 'name':t.name, 'rank':t.rank, 'status': t.colNameStatus, 'group' : t.group, 'position':'WORKING','id':t.externalId,'acceptedName':'']
 							}
 						}
 						
@@ -232,7 +237,7 @@ class NamelistService extends AbstractObjectService {
 							ibpResult = searchIBP(name.canonicalForm, null, null, names[i].rank, false, null, false)
 							ibpResult.each { TaxonomyDefinition t ->
 								t = TaxonomyDefinition.get(t.id)
-								tmpRes << ['match':'IBP', 'name':t.name, 'rank':ScientificName.TaxonomyRank.getTRFromInt(t.rank).value(), 'status': t.status.value(), 'group' : t.group?.name, 'position':t.position.value(),'id':t.id]
+								tmpRes << ['match':'IBP', 'name':t.name, 'rank':ScientificName.TaxonomyRank.getTRFromInt(t.rank).value(), 'status': t.status.value(), 'group' : t.group?.name, 'position':t.position.value(),'id':t.id,'acceptedName':'']
 							}
 						}
 					}
@@ -1755,7 +1760,7 @@ class NamelistService extends AbstractObjectService {
 				return responseAsMap(xmlFile.text, searchBy)
 			}
 		}
-		
+		try {
 		def http = new HTTPBuilder()
 		http.request( COL_SITE, GET, TEXT ) { req ->
 			uri.path = COL_URI
@@ -1776,6 +1781,10 @@ class NamelistService extends AbstractObjectService {
 				return result;
 			}
 			response.'404' = { println 'Not found' }
+		}
+		}catch(e){
+			log.debug "Error in searchCol input "  + input
+			e.printStackTrace()
 		}
 	}
 
