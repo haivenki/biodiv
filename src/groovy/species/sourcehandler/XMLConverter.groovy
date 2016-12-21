@@ -154,7 +154,13 @@ class XMLConverter extends SourceConverter {
 		
 		new Node(node, "matchStatus", m['status']);
 		new Node(node, "rank", m['rank']);
-				
+		
+		String nameUpdate = m['name update']
+		
+		if(nameUpdate){
+			new Node(node, "nameUpdate", nameUpdate);
+		}
+
 		String targetPosition = m['target position']
 		if(targetPosition){
 			new Node(node, "position", targetPosition);
@@ -441,7 +447,7 @@ class XMLConverter extends SourceConverter {
 	
 	public TaxonomyDefinition convertName(Node species) {
 		if(!species) return null;
-		
+			
 		try {
 			StringBuilder sb = new StringBuilder()
 			individualNameSumm = ""
@@ -505,6 +511,25 @@ class XMLConverter extends SourceConverter {
 					
 					//println " latest hir -------convertname------------ <<<<<<<<<>>>>>>>>>>>>>>> " + latestHir
 					//taxonConcept.updateNameStatus(targetStatus)
+
+					String nameUpdate = getData(speciesNameNode.nameUpdate);
+					if(nameUpdate){
+
+					 NamesParser namesParser = new NamesParser();
+	                 TaxonomyDefinition pn = new NamesParser().parse([speciesName])?.get(0);
+                     if(pn){
+                        Map m = [name:pn.name, canonicalForm:pn.canonicalForm, normalizedForm:pn.normalizedForm, italicisedForm:pn.normalizedForm,  binomialForm:pn.binomialForm, authorYear:pn.authorYear, id:taxonConcept.id]
+                        TaxonomyDefinition.executeUpdate( "update TaxonomyDefinition set name = :name, canonicalForm = :canonicalForm, normalizedForm = :normalizedForm,  italicisedForm = :italicisedForm, binomialForm = :binomialForm, authorYear = :authorYear where id = :id", m)                        
+                        Species sp = Species.findByTaxonConcept(taxonConcept);
+                        if(sp){
+                            sp.title = pn.normalizedForm;
+                            if(sp.save(flush:true)){
+                                println "Species Title Updated successFully "+ sp;
+                            }
+                        }
+                    }
+
+					}
 					taxonConcept.updatePosition(speciesNameNode?.position?.text(), getNameSourceInfo(species), latestHir)
 					updateUserPrefForColCuration(taxonConcept, speciesNameNode)
 					taxonConcept.postProcess()

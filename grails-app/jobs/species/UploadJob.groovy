@@ -20,6 +20,8 @@ class UploadJob {
 	private final static String TRAIT = "trait";
 	private final static String FACT = "fact";
 	public final static String SPECIES_BULK_UPLOAD = "species bulk upload";
+    public final static String NAMES_UPLOAD = "namesupload";
+    
 	
 	def obvUtilService
     def utilsService;
@@ -49,7 +51,6 @@ class UploadJob {
             try{
                 log.debug "starting task $dl"
                 Map result;
-
                 switch (dl.uploadType.toLowerCase()) {
                     case [OBSERVATION_LIST, UNIQUE_SPECIES]:
                     //f = obvUtilService.export(dl.fetchMapFromText(), dl)
@@ -69,7 +70,7 @@ class UploadJob {
                     case FACT:
                     result = factService.upload(dl.filePath, dl.fetchMapFromText(), dl);
                     break;
-                    case SPECIES_BULK_UPLOAD:
+                    case [SPECIES_BULK_UPLOAD, NAMES_UPLOAD]:
                     int unreturnedConnectionTimeout = dataSource.getUnreturnedConnectionTimeout();
                     dataSource.setUnreturnedConnectionTimeout(100000);
                     try{

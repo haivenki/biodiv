@@ -753,3 +753,5 @@ drop table custom_fields_group_7;
 select id from field where concept='Natural History' and category='Reproduction';
 update trait set field_id=39 where name='Sex';
 
+#21th Dec 2016 for species upload search type as All or IBP only
+alter table names_report_generator add column search_type character varying(40);
