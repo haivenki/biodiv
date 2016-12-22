@@ -197,13 +197,14 @@ class NamelistService extends AbstractObjectService {
 						// return works here as continue
 						return
 					}
-					
-					List ibpResult = searchIBP(name.canonicalForm, name.authorYear, null, names[i].rank, false, name.normalizedForm, true)
+										
+					def useAuthoryear = (searchType == 'All')?true:false;
+					List ibpResult = searchIBP(name.canonicalForm, name.authorYear, null, names[i].rank, false, name.normalizedForm, useAuthoryear)
 					ibpResult.each { TaxonomyDefinition t ->
-		                t = TaxonomyDefinition.get(t.id)
+					    t = TaxonomyDefinition.get(t.id)
 		                def getAcceptedNames = ""
 		                if(t.status == NameStatus.SYNONYM){
-		                	def taxonAcceptedNames = t.fetchAcceptedNames().collect{it.name}
+		                	def taxonAcceptedNames = t.fetchAcceptedNames().collect{it.id +'#'+ it.name}
 		                	getAcceptedNames = taxonAcceptedNames.join(", ");
 		                }
 						tmpRes << ['match':'IBP', 'name':t.name, 'rank':ScientificName.TaxonomyRank.getTRFromInt(t.rank).value(), 'status': t.status.value(), 'group' : t.group?.name, 'position':t.position.value(),'id':t.id,'acceptedName':getAcceptedNames]

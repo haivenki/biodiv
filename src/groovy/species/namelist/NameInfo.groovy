@@ -113,10 +113,10 @@ class NameInfo {
 		Map content = nmService.nameMapper(nameInfoList,searchType)
 		writeSheet(f, content, TAXON_NAMES_SHEET, sIndex++)
 		
-		content = nmService.nameMapper(taxonList)
+		content = nmService.nameMapper(taxonList,searchType)
 		writeSheet(f, content, HIR_SHEET, sIndex++)
 		
-		content = nmService.nameMapper(synList)
+		content = nmService.nameMapper(synList,searchType)
 		writeSheet(f, content, SYNONYMS_SHEET, sIndex++)
 		
 		return f
