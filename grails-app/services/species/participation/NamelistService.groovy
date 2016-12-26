@@ -173,7 +173,6 @@ class NamelistService extends AbstractObjectService {
 	 * @return
 	 */
 	public Map nameMapper(List<NameInfo> names,String searchType='All') {
-		
 		Map finalResult = [:]
 		NamesParser namesParser = new NamesParser();
 		List<TaxonomyDefinition> parsedNames = namesParser.parse(names.collect {it.name});
@@ -192,7 +191,7 @@ class NamelistService extends AbstractObjectService {
 					List tmpRes = []
 					if(!name || !name.canonicalForm) {
 						log.debug "Name is not parsed by Names Parser " + name
-						tmpRes << ['match':'None', 'name':'', 'rank':'', 'status': '', 'group' : '', 'position':'','id':'','acceptedName':'']
+						tmpRes << ['match':'None', 'name':'', 'rank':'', 'status': '', 'group' : '', 'position':'','id':'','acceptedName':'','acceptedId':'']
 						finalResult[names[i]] = tmpRes
 						// return works here as continue
 						return
@@ -200,14 +199,18 @@ class NamelistService extends AbstractObjectService {
 										
 					def useAuthoryear = (searchType == 'All')?true:false;
 					List ibpResult = searchIBP(name.canonicalForm, name.authorYear, null, names[i].rank, false, name.normalizedForm, useAuthoryear)
+					
 					ibpResult.each { TaxonomyDefinition t ->
 					    t = TaxonomyDefinition.get(t.id)
 		                def getAcceptedNames = ""
+		                def getAcceptedNameIds = ""
 		                if(t.status == NameStatus.SYNONYM){
-		                	def taxonAcceptedNames = t.fetchAcceptedNames().collect{it.id +'#'+ it.name}
-		                	getAcceptedNames = taxonAcceptedNames.join(", ");
+		                	def taxonAcceptedNames = t.fetchAcceptedNames().collect{it.name}
+		                	getAcceptedNames = taxonAcceptedNames.join(": ");
+		                	def taxonAcceptedIds = t.fetchAcceptedNames().collect{it.id}
+		                	getAcceptedNameIds = taxonAcceptedIds.join(": ");
 		                }
-						tmpRes << ['match':'IBP', 'name':t.name, 'rank':ScientificName.TaxonomyRank.getTRFromInt(t.rank).value(), 'status': t.status.value(), 'group' : t.group?.name, 'position':t.position.value(),'id':t.id,'acceptedName':getAcceptedNames]
+						tmpRes << ['match':'IBP', 'name':t.name, 'rank':ScientificName.TaxonomyRank.getTRFromInt(t.rank).value(), 'status': t.status.value(), 'group' : t.group?.name, 'position':t.position.value(),'id':t.id,'acceptedName':getAcceptedNames,'acceptedId':getAcceptedNameIds]
 					}
 					
 					if(!ibpResult && searchType == 'All'){
@@ -228,7 +231,7 @@ class NamelistService extends AbstractObjectService {
 								}
 							}
 							if(addToList){
-								tmpRes << ['match':'COL', 'name':t.name, 'rank':t.rank, 'status': t.colNameStatus, 'group' : t.group, 'position':'WORKING','id':t.externalId,'acceptedName':'']
+								tmpRes << ['match':'COL', 'name':t.name, 'rank':t.rank, 'status': t.colNameStatus, 'group' : t.group, 'position':'WORKING','id':t.externalId,'acceptedName':'','acceptedId':'']
 							}
 						}
 						

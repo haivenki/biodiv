@@ -118,7 +118,7 @@ class XMLConverter extends SourceConverter {
 		updateNode(node, speciesMap, k)
 		
 		//updating taxon hir here for ibp and col match
-		List taxonNodes = getNodesFromCategory(species.children(), fieldsConfig.AUTHOR_CONTRIBUTED_TAXONOMIC_HIERARCHY);
+		List taxonNodes = getNodesFromCategory(species.children(), fieldsConfig.AUTHOR_CONTRIBUTED_TAXONOMIC_HIERARCHY,true);
 		
 		taxonNodes.each { tn ->
 			if(tn && tn.data){
@@ -198,7 +198,7 @@ class XMLConverter extends SourceConverter {
 		int rank = getTaxonRank(getNodeDataFromSubCategory(species, fieldsConfig.RANK));
 		
 		NameInfo n = new NameInfo(speciesName, rank, index)
-		//getting hir
+		//getting hir		
 		List taxonNodes = getNodesFromCategory(species.children(), fieldsConfig.AUTHOR_CONTRIBUTED_TAXONOMIC_HIERARCHY);
 		//println "====== taxon =====>>>>>>>>>>======= " + taxonNodes
 		taxonNodes.each { tn ->
@@ -514,21 +514,19 @@ class XMLConverter extends SourceConverter {
 
 					String nameUpdate = getData(speciesNameNode.nameUpdate);
 					if(nameUpdate){
-
-					 NamesParser namesParser = new NamesParser();
-	                 TaxonomyDefinition pn = new NamesParser().parse([speciesName])?.get(0);
-                     if(pn){
-                        Map m = [name:pn.name, canonicalForm:pn.canonicalForm, normalizedForm:pn.normalizedForm, italicisedForm:pn.normalizedForm,  binomialForm:pn.binomialForm, authorYear:pn.authorYear, id:taxonConcept.id]
-                        TaxonomyDefinition.executeUpdate( "update TaxonomyDefinition set name = :name, canonicalForm = :canonicalForm, normalizedForm = :normalizedForm,  italicisedForm = :italicisedForm, binomialForm = :binomialForm, authorYear = :authorYear where id = :id", m)                        
-                        Species sp = Species.findByTaxonConcept(taxonConcept);
-                        if(sp){
-                            sp.title = pn.normalizedForm;
-                            if(sp.save(flush:true)){
-                                println "Species Title Updated successFully "+ sp;
-                            }
-                        }
-                    }
-
+						 NamesParser namesParser = new NamesParser();
+		                 TaxonomyDefinition pn = new NamesParser().parse([speciesName])?.get(0);
+	                     if(pn){
+	                        Map m = [name:pn.name, canonicalForm:pn.canonicalForm, normalizedForm:pn.normalizedForm, italicisedForm:pn.normalizedForm,  binomialForm:pn.binomialForm, authorYear:pn.authorYear, id:taxonConcept.id]
+	                        TaxonomyDefinition.executeUpdate( "update TaxonomyDefinition set name = :name, canonicalForm = :canonicalForm, normalizedForm = :normalizedForm,  italicisedForm = :italicisedForm, binomialForm = :binomialForm, authorYear = :authorYear where id = :id", m)                        
+	                        Species sp = Species.findByTaxonConcept(taxonConcept);
+	                        if(sp){
+	                            sp.title = pn.normalizedForm;
+	                            if(sp.save(flush:true)){
+	                                println "Species Title Updated successFully "+ sp;
+	                            }
+	                        }
+	                    }
 					}
 					taxonConcept.updatePosition(speciesNameNode?.position?.text(), getNameSourceInfo(species), latestHir)
 					updateUserPrefForColCuration(taxonConcept, speciesNameNode)
@@ -1836,19 +1834,25 @@ class XMLConverter extends SourceConverter {
 		return ['taxonRegistry':taxonHierarchies, 'spellCheckMsg':spellCheckMsg];
     }
 
-    private List<Node> getNodesFromCategory(List speciesNodes, String category) {
+    private List<Node> getNodesFromCategory(List speciesNodes, String category,hirCheck = false) {
         def result = new ArrayList();
+        def fieldsConfig = config.speciesPortal.fields;
+        def hirList1 = [fieldsConfig.AUTHOR_CONTRIBUTED_TAXONOMIC_HIERARCHY.toLowerCase(),"gbif taxonomy hierarchy"] as String[];
+        
+
         for(Node fieldNode : speciesNodes) {
             if(fieldNode.name().equals("field")) {
                 String cat = fieldNode.category?.text()?.trim().toLowerCase();
-                Language language = fieldNode.language[0].value();
+                Language language = fieldNode.language[0].value();                            
                 if(cat && (cat.equalsIgnoreCase(category) || cat.equalsIgnoreCase(getFieldFromName(category,2,language))) ) {
                     result.add(fieldNode);
+                }else if(hirList1.contains(cat) && hirCheck){
+                	result.add(fieldNode);
                 }
             }
         }
         return result;
-    }
+    } 
 
     List<TaxonomyRegistry> getTaxonHierarchyOld(List fieldNodes, Classification classification, String scientificName, boolean saveTaxonHierarchy=true) {
         //log.debug "Getting classification hierarchy : "+classification.name;

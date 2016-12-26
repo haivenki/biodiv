@@ -82,11 +82,11 @@ class NameInfo {
 	}
 	
 	public static File writeNamesMapperSheet(List nameInfoList, File f,String searchType='All') {
-		println "------------------------------- file -----------" + f
+		println "------------------------------- file -----------" + f		
 		if(!nameInfoList){
 			return
 		}
-				
+			
 		List taxonList = []
 		nameInfoList.each { NameInfo ni ->
 			List th = ni.taxonHir
@@ -138,7 +138,7 @@ class NameInfo {
 			
 			//writing header
 			Row row =  sheet.createRow(0);
-			List arr = ['Name', 'Index', 'Source Name', 'Match Found', 'Matched Name' ,'Rank', 'Status', 'Group', 'Position', 'Id', 'Accepted Name','Name Update', 'Target Position' , 'Target Status']
+			List arr = ['Name', 'Index', 'Source Name', 'Match Found', 'Matched Name' ,'Rank', 'Status', 'Group', 'Position', 'Id', 'Accepted Names','Accepted Name Ids','Name Update', 'Target Position' , 'Target Status']
 			Cell cell;
 			int k = 0;
 			arr.each {
@@ -171,6 +171,8 @@ class NameInfo {
 					}
 					cell = row.getCell(10,Row.CREATE_NULL_AS_BLANK);
 					cell.setCellValue((result[0]?.acceptedName)?:'');
+					cell = row.getCell(11,Row.CREATE_NULL_AS_BLANK);
+					cell.setCellValue((result[0]?.acceptedId)?:'');
 				}else{
 					result.each { Map r ->
 						row = sheet.createRow(rowNum++);
