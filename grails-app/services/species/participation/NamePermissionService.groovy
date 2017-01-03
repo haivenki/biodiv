@@ -6,7 +6,7 @@ import species.TaxonomyDefinition
 import species.auth.SUser
 import species.participation.NamePermission.Permission
 import species.NamesMetadata.NamePosition
-
+import species.Classification;
 class NamePermissionService {
 
 	static transactional = false
@@ -51,6 +51,10 @@ class NamePermissionService {
 		return NamePermission.getAllPermissions(m.user)
 	}
 	
+	def List getAllAdmins(){
+        return NamePermission.getAllAdmins()    
+    }
+
 	def boolean hasPermissionOnAll(m){
 		if(m instanceof Map){
 			boolean retVal = true
@@ -99,5 +103,24 @@ class NamePermissionService {
 				return tList
 		}
 	}
+
+	def getAllTaxonUsers(TaxonomyDefinition node){
+        if(!node){
+            log.error "Node is null so not giving any permission"
+            return false
+        }
+        
+        Classification defClassi = Classification.fetchIBPClassification()
+        List tds = node.parentTaxonRegistry(defClassi).get(defClassi)
+
+        if(!tds){
+            log.error "Node $node does not have ibp hirerachy so giving permission to everybody"
+            return []
+        }   
+        
+        return NamePermission.withCriteria {
+            'in'("node",tds)            
+        }       
+    }
 }
 		

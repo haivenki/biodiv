@@ -379,8 +379,13 @@ class TaxonController {
             map['type'] = r.rank+''
             map['isSpecies'] =  (r.rank == TaxonomyRank.SPECIES.ordinal()) ? true : false           
             if(r.taxonId){
-                def getAllPermissions = namePermissionService.getAllPermissions(namePermissionService.populateMap([taxon:"" +r.taxonId]));
+                //def getAllPermissions = namePermissionService.getAllPermissions(namePermissionService.populateMap([taxon:"" +r.taxonId]));
+                def getAllPermissions = namePermissionService.getAllTaxonUsers(TaxonomyDefinition.read(r.taxonId))
+                def getAllAdmins = namePermissionService.getAllAdmins()
                 def users=[]
+                getAllAdmins.each { nP ->
+                    users << [id:nP.user.id,name:nP.user.name,perm:nP.permission.value(),profile_pic:nP.user.profilePicture(ImageType.SMALL)];
+                }                
                 getAllPermissions.each { nP ->
                     users << [id:nP.user.id,name:nP.user.name,perm:nP.permission.value(),profile_pic:nP.user.profilePicture(ImageType.SMALL)];
                 }

@@ -4,7 +4,7 @@
 <%@ page import="species.TaxonomyDefinition"%>
 <%@ page import="species.ScientificName.TaxonomyRank"%>
 <style type="text/css">
-.userList .ADMIN{
+/*.userList .ADMIN{
     background: black;
 }
 .userList .CURATOR{
@@ -12,7 +12,7 @@
 }
 .userList .EDITOR{
     background: rgb(211, 67, 83);
-}
+}*/
 </style>
 <g:if test="${classifications}">
 <select name="taxaHierarchy" class="value ui-corner-all" style="margin-bottom:0px;width:100%;background-color:whitesmoke;">

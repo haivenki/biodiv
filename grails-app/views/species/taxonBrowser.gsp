@@ -14,6 +14,12 @@
 /*.userList{
     margin-left:20px;    
 }*/
+.userList{
+    margin-left:2px;
+}
+.userList:first-child { 
+    margin-left:20px;
+}
 .userList img{
     width:20px;
     height:20px;
