@@ -171,4 +171,18 @@
 
 
     </div>
+
+
+<!-- Show popup -->
+<div class="modal hide fade" id="showPopUserCtrl" tabindex='-1'
+            role="dialog" 
+            aria-hidden="true">
+            
+            <div class="modal-body">                
+                <div class="btn"> <a href="#" id="targetShowUser">Show user</a> </div>
+                <div class="btn" id="removeTaxonPermission" >Remove Permission</div>    
+            </div>
+            
+        </div>
+
 </sec:ifAnyGranted>

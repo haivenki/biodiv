@@ -122,6 +122,34 @@
                 action:"${params.action?:'index'}",
                 variant:"large"
             });	
+            $('#removeTaxonPermission').click(function(){
+                var that = $(this);
+                var params = { user : that.data('userid'), taxon : that.data('taxonid'), permission : that.data('perm')}                
+                console.log(params);
+
+                $.ajax({
+                    url:'/namelist/removePermission',
+                    data:params,
+                    method:'POST',
+                    dataType:'json',
+                    success:function(data) {
+                        console.log(data);
+                        if(data.status){
+                            alert("Removed Successfully !!!")
+                            location.reload();
+                        }else{
+                            alert("Something Problem!!");
+                        }
+                        
+                    }, error: function(xhr, status, error) {
+                        handleError(xhr, status, error, this.success, function() {
+                            var msg = $.parseJSON(xhr.responseText);
+                            $(".alertMsg").html(msg.msg).removeClass('alert-success').addClass('alert-error');
+                        });
+                    }
+                });
+            });
+
             /*$("#searchPermission").autofillNames({
                 'appendTo' : '#nameSuggestions',
                 'nameFilter':'scientificNames',
@@ -172,6 +200,16 @@
                 });
             });*/
         });
+
+        function showpopupUser(userId,taxonId,perm){
+            var that = $('#showPopUserCtrl');
+            that.find('#targetShowUser').attr('href','/user/show/'+userId);
+            that.find('#removeTaxonPermission').attr('data-userId',userId).attr('data-taxonId',taxonId).attr('data-perm',perm);
+
+            that.modal('show');
+            return false;
+        }
+
         </asset:script>
     </body>
 </html>

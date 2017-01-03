@@ -137,7 +137,7 @@
                                 if(nodeData.original.usersList.length > 0){
                                     for(var i=0;i<nodeData.original.usersList.length;i++){
                                         var userData = nodeData.original.usersList[i];
-                                        $(obj).append('<span class="userList"><a title="'+userData['name']+'" href="/user/show/'+userData['id']+'" target="_blank"><img class="'+userData['perm']+'" src="'+userData['profile_pic']+'" /></a></span>');
+                                        $(obj).append('<span class="userList"><a title="'+userData['name']+'" href="#" onclick="showpopupUser('+userData['id']+','+nodeData.original.taxonid+',\''+userData['perm']+'\');"><img class="'+userData['perm']+'" src="'+userData['profile_pic']+'" /></a></span>');
                                     }
                                 }
                             }
