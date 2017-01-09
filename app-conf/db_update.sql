@@ -755,3 +755,9 @@ update trait set field_id=39 where name='Sex';
 
 #21th Dec 2016 for species upload search type as All or IBP only
 alter table names_report_generator add column search_type character varying(40);
+#21stDec2016
+alter table trait alter column icon type text;
+
+#03Jan2017
+alter table fact add column to_value varchar(255);
+alter table fact alter column trait_value_id drop not null;

@@ -13,7 +13,6 @@ instanceList.each{ iL ->
     }
 }
 %>                   
-
  <div class="observations_list trait_list" style="clear: both;">
 	<div class="mainContentList">
 		<div class="mainContent trait_list_content" name="p${params?.offset}">
@@ -25,13 +24,16 @@ instanceList.each{ iL ->
                     	<h5>${inst.key}</h5>
                    </a> 
                    </g:if>
+                   
                  <ul id="trait${j}" class="grid_view thumbnails obvListwrapper">
 				<g:each in="${inst.value}" status="i" var="trait_instance">
+				<div data-isNotObservation="${trait_instance.isNotObservationTrait}">
 					<li class="thumbnail" style="clear: both;margin-left:0px;width:100%;border:0px !important;">
-                    <g:render template="/trait/showTraitTemplate" model="['trait':trait_instance, 'factInstance':factInstance, object:instance, 'fromSpeciesShow':fromSpeciesShow, 'queryParams':queryParams, 'editable':editable]"/>
+                    <g:render template="/trait/showTraitTemplate" model="['trait':trait_instance, 'factInstance':factInstance, object:instance, 'fromSpeciesShow':fromSpeciesShow, 'queryParams':queryParams, 'editable':editable, 'ifOwns':ifOwns, 'filterable':filterable]"/>
 					</li>
+					</div>
 				</g:each>
-			</ul>               
+			</ul>              
 			</div>
 			</g:each>
 			</div>			

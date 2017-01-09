@@ -34,9 +34,14 @@ class TraitController extends AbstractObjectController {
     def list() {
         def model = getList(params);
         model.userLanguage = utilsService.getCurrentLanguage(request);
-
         if(params.displayAny) model.displayAny = params.displayAny?.toBoolean();
         else model.displayAny = true;
+        if(params.editable) model.editable = params.editable?.toBoolean();
+        else model.editable = false;
+        if(params.filterable) model.filterable = params.filterable?.toBoolean();
+        else model.filterable = true;
+        if(params.fromObservationShow) model.fromObservationShow = params.fromObservationShow;
+ 
         //HACK
         if(params.trait) {
             model.queryParams = ['trait':[:]];
@@ -54,7 +59,8 @@ class TraitController extends AbstractObjectController {
         }
 
         model = utilsService.getSuccessModel('', null, OK.value(), model);
-
+        println model
+        println model.queryParams
         withFormat {
             html {
                 if(params.loadMore?.toBoolean()){
@@ -117,6 +123,8 @@ class TraitController extends AbstractObjectController {
         def speciesField=params.fieldid.replaceAll(">", "|").trim()
         def fieldInstance=traitService.getField(speciesField,languageInstance)
         traitInstance.field=fieldInstance
+        traitInstance.taxon.clear()
+        if(params.taxonName){
         def taxonId
         params.taxonName.each{
             taxonId=it
@@ -125,6 +133,7 @@ class TraitController extends AbstractObjectController {
             TaxonomyDefinition taxon = TaxonomyDefinition.findById(taxonId);
             traitInstance.addToTaxon(taxon);
         }
+    }
 
         if (!traitInstance.hasErrors() && traitInstance.save(flush: true)) {
             msg = "${message(code: 'default.updated.message', args: [message(code: 'trait.label', default: 'Trait'), traitInstance.id])}"
@@ -212,11 +221,12 @@ class TraitController extends AbstractObjectController {
             };
         }
         log.debug "Storing all ${params.controller} ids list in session ${session[params.controller+'_ids_list']} for params ${params}";
-        return [instanceList: instanceList, instanceTotal: count, queryParams: queryParams, activeFilters:activeFilters, resultType:params.controller]
+        return [instanceList: instanceList, instanceTotal: count, queryParams: queryParams, activeFilters:activeFilters, resultType:params.controller, 'factInstance':filteredList.traitFactMap, instance:filteredList.object]
     }
 
     def show() {
         Trait traitInstance = Trait.findByIdAndIsDeleted(params.id,false)
+        String msg;
         if(traitInstance) {
             def coverage = traitInstance.taxon
             def traitValue = [];
@@ -236,12 +246,18 @@ class TraitController extends AbstractObjectController {
                 xml { render utilsService.getSuccessModel('', traitInstance, OK.value()) as XML }
             }
         } else {
+            msg = "${message(code: 'default.not.found.message', args: [message(code: 'trait.label', default: 'Trait'), params.id])}"
+            def model = utilsService.getErrorModel(msg, null, OK.value());
             withFormat {
                 html {
-                    render (view:"list")
+                    flash.message = msg;
+                    redirect (url:uGroup.createLink(action:'list', controller:"trait", 'userGroupWebaddress':params.webaddress))
                 }
+                json { render model as JSON }
+                xml { render model as XML }
             }
         }
+        
         return
     }
 

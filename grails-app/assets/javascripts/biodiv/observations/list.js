@@ -403,7 +403,6 @@ $(document).ready(function(){
     setActiveTag($('<a href="'+ tmpTarget +'"></a>').url().param()["tag"]);
 
     $('.observation').on("click", ".loadMore", function() {
-console.log('loadMore');
         $.autopager({
 
             autoLoad : true,
@@ -738,7 +737,7 @@ function getSelectedHabitat() {
 function getSelectedTrait($traitFilter, putValue) {
     putValue = (putValue === undefined)?false:true;
     if($traitFilter == undefined)
-        $traitFilter = $('.traitFilter button, .traitFilter .none, .traitFilter .any, .trait button, .trait .none, .trait .any');
+        $traitFilter = $('.traitFilter.filterable button, .traitFilter.filterable .none, .traitFilter.filterable .any, .trait.filterable button, .trait.filterable .none, .trait.filterable .any');
     var trait='',selTrait={}; 
     $traitFilter.each(function(){
         if($(this).hasClass('btn-success')) {

@@ -14,7 +14,35 @@ function loadMatchingSpeciesList() {
     console.log(url);
     var href = url.attr('path');
     var params = getFilterParameters(url);
+    var element = {};
+    var listFilter = $('.listFilter');
+        listFilter.each(function(){
+        if($(this).hasClass('active')) {
+           var traitType = $(this).val();
+           params['traitType'] = traitType;
+        }
+    });
     for(var key in params) {
+        if(key.match('traitType')){
+                if(params[key]=='observation'){
+                element = $('div[data-isNotObservation="true"]');
+                    $(element).each(function(){
+                        $(this).parent().parent().hide();
+                    });
+            }
+            else if (params[key]=='species'){
+                element = $('div[data-isNotObservation="false"]');
+                $(element).each(function(){
+                    $(this).parent().parent().hide();
+                });
+            }
+            else{
+                element = $('div[data-isNotObservation]');
+                $(element).each(function(){
+                    $(this).parent().parent().show();
+                });
+            }
+        }
         if(key.match('trait.')) {
             delete params[key];
         }
@@ -26,7 +54,6 @@ function loadMatchingSpeciesList() {
     }
     params['max'] = $(this).data('max');
     params['offset'] = $(this).data('offset');
-
     History.pushState({state:1}, document.title, '?'+decodeURIComponent($.param(params))); 
     var $matchingSpeciesTable = $('#matchingSpeciesTable');
     $.ajax({
@@ -68,7 +95,7 @@ function loadMatchingSpeciesList() {
 }
 
 function showIcon(value,name,url){
-    return  '<img src="'+url+'" width="32" height="32" src="'+name+'-'+value+'" />';
+    return  '<img src="'+url+'" width="32" height="32" title="'+name+'-'+value+'" />';
 }
 
 function onSubmitFact($me, objectId, objectType) {
@@ -112,6 +139,46 @@ function onSubmitFact($me, objectId, objectType) {
     });
 }
 
+function loadTraits($me, compId) {
+    var params = {};//$me.data();
+    params['objectId'] = $me.data('objectid');
+    params['objectType'] = $me.data('objecttype');
+    params['sGroup'] = $me.data('sgroup');
+    params['isObservationTrait'] = $me.data('isobservationtrait');
+    params['isParticipatory'] = $me.data('isparticipatory');
+    params['showInObservation'] = $me.data('showinobservation');
+    params['loadMore'] = true;
+    params['displayAny'] = false;
+    params['editable'] = true;
+    params['fromObservationShow'] = 'show';
+    params['filterable'] = false;
+    $.ajax({
+        url:window.params.trait.listUrl,
+        method:'GET',
+        data:params,
+        success: function(data) {   
+            $(compId).html(data);
+        }
+    });
+}
+
+function loadCustomFields($me, compId) {
+    var params = {};//$me.data();
+    params['objectId'] = $me.data('objectid');
+    $.ajax({
+        url:window.params.observation.customFieldsUrl,
+        method:'GET',
+        data:params,
+        success: function(data) {   
+            if(data.html) 
+                $(compId).html(data.html);
+            else
+                $(compId).html("<div class='alert alert-info'>No Custom Fields</div>");
+        }
+    });
+}
+
+
 
 
 /* For PopOver Traits*/
@@ -127,7 +194,7 @@ $(document).ready(function(){
         'hide': "100"
         },
         'content':function(){
-            return "<div style='width:150px;height:150px;'><img src='"+$(this).data('imageUrl')+"' width='150' height='150' /></div>";
+            return "<div style='width:150px;height:200px;'><img src='"+$(this).data('imageUrl')+"' width='150' height='150' /><p>"+$(this).data('trait')+"-"+$(this).data('traitvalue')+"</p></div>";
         }
     });
         

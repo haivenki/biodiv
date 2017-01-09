@@ -10,6 +10,11 @@
 
 	<!-- main_content -->
 	<div class="list span12 namelist_wrapper" style="margin-left:0px;clear:both">
+        <div class="btn-group" data-toggle="buttons-radio" style="float:right;">
+        <button type="button" class="btn btn-primary  listFilter default" value="species" id="species">Species Trait</button>
+        <button type="button" class="btn btn-primary listFilter" value="observation" id="observation">Observation Trait</button>
+        <button type="button" class="btn btn-primary listFilter all" value="all" id="all">All</button>
+    </div>
 		<div class="observation thumbwrap">
 			<obv:showObservationFilterMessage
 						model="['observationInstanceList':instanceList, 'observationInstanceTotal':instanceTotal, 'queryParams':queryParams, resultType:'trait']" />
@@ -34,7 +39,7 @@
                 </div>
             </div>
             <div class="span9 right-shadow-box" style="position: relative;height:388px;overflow-y: scroll;">
-                <g:render template="showTraitListTemplate" model="['displayAny':true]"/>
+                <g:render template="showTraitListTemplate" model="['displayAny':true, 'editable':false]"/>
             </div>
         </div>
     </div>
@@ -49,7 +54,6 @@
     </g:each>
 
     $(document).ready (function() {
-
         var taxonBrowserOptions = {
             expandAll:false,
             controller:"${params.controller?:'observation'}",
@@ -63,7 +67,7 @@
         
         $('.taxonomyBrowser').taxonhierarchy(taxonBrowserOptions);	
         
-        $(document).on('click', '.trait button, .trait .all, .trait .any, .trait .none', function(){
+        $(document).on('click', '.trait button, .trait .all, .trait .any, .trait .none, .listFilter', function(){
             if($(this).hasClass('active')){
             return false;
             }
@@ -84,8 +88,28 @@
 
         $('.list').on('updatedGallery', function() {
             updateMatchingSpeciesTable();
+            element = $('button[data-isNotObservation="false"]');
+            $(element).each(function(){
+                $(this).attr("disabled", "disabled");
+            });
+
+            $('.listFilter').on('click',function(){
+                var element = {};
+                element = $('div[data-isNotObservation]');
+                $(element).each(function(){
+                    $(this).parent().parent().show();
+                });
+                if($(this).hasClass('active')){
+                    return false;
+                }
+                $(this).parent().find('.listFilter').removeClass('active btn-success');
+                $(this).addClass('active btn-success')
+                updateMatchingSpeciesTable();
+                return false;
+            });
         });
     });
+
 $(document).ready(function() {
 	$(".trait button").button();
 	$(".trait button").tooltip({placement:'bottom', 'container':'body'});

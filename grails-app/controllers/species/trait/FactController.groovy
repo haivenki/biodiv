@@ -15,6 +15,7 @@ import species.TaxonomyDefinition;
 import species.groups.CustomField;
 import species.auth.SUser;
 import species.License;
+import species.Species;
 
 class FactController extends AbstractObjectController {
 
@@ -31,21 +32,7 @@ class FactController extends AbstractObjectController {
     }
 
     def list() {
-        //render (view:'list', model:['traitList' : traitService.listTraits(params)]);
-        def model = [:];
-        model = utilsService.getSuccessModel('', null, 200, model);
-
-        withFormat {
-            html {
-                render(controller:'trait',view:"list", model:model.model);
-            }
-            json {
-                render model as JSON 
-            }
-            xml {
-                render model as XML
-            }
-        }
+        render(controller:'trait', view:"list");
     }
 
     def show() {
@@ -118,17 +105,17 @@ class FactController extends AbstractObjectController {
                     //TODO: to update this from approprite result from factService.update
                     success = r.success;
                     result = [success:success, msg:success?'Successfully updated fact':'Error updating fact'];
+                    def activityFeed;
                     if(success) {
                         r.facts_updated.each { fact ->
-                            def activityFeed = activityFeedService.addActivityFeed(object, fact, fact.contributor, activityFeedService.FACT_UPDATED, fact.getActivityDescription());
+                            activityFeed = activityFeedService.addActivityFeed(object, fact, fact.contributor, activityFeedService.FACT_UPDATED, fact.getActivityDescription());
                         }
                         r.facts_created.each { fact ->
-                            def activityFeed = activityFeedService.addActivityFeed(object, fact, fact.contributor, activityFeedService.FACT_CREATED, fact.getActivityDescription());
+                            activityFeed = activityFeedService.addActivityFeed(object, fact, fact.contributor, activityFeedService.FACT_CREATED, fact.getActivityDescription());
                         }
-                        //utilsService.sendNotificationMail(mailType, observationInstance, request, params.webaddress, activityFeed);
-                    
+                        
                         List<Fact> facts = Fact.findAllByTraitAndObjectIdAndObjectType(trait, object.id, object.class.getCanonicalName());
-                        Map queryParams = ['trait':[:]], factInstance = [:];
+                        Map queryParams = ['trait':[:]], factInstance = [:], otherParams = [:];
                         queryParams.trait[trait.id] = '';
                         facts.each { fact ->
                             queryParams.trait[trait.id] += fact.traitValue.id+',';
@@ -136,6 +123,9 @@ class FactController extends AbstractObjectController {
                                 factInstance[trait.id] = [];
                             }
                             factInstance[trait.id] << fact.traitValue;
+                            otherParams["trait"] = trait.name
+                            otherParams["traitValue"] = fact.traitValue
+                            utilsService.sendNotificationMail(utilsService.FACT_UPDATE,object,null,null,null,otherParams)
                         }
                         println "======================"
                         println queryParams

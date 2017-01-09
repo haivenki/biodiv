@@ -95,6 +95,7 @@ class TraitService extends AbstractObjectService {
         }
         traitResourceDir = new File(traitResourceDir, UUID.randomUUID().toString()+File.separator+"resources");
         traitResourceDir.mkdirs();
+        String resourceFromDir = (new File(file)).getParent();
 
         while(row) {
             if(row[traitNameHeaderIndex] == null || row[traitNameHeaderIndex] == '') {
@@ -172,7 +173,7 @@ class TraitService extends AbstractObjectService {
                         break;
 
                         case 'trait icon' : 
-                        trait.icon = migrateIcons(row[index].trim(), traitResourceDir);
+                        trait.icon = migrateIcons(row[index].trim(), traitResourceDir, resourceFromDir);
                         break;
 
                         case 'taxonid':
@@ -292,6 +293,7 @@ class TraitService extends AbstractObjectService {
         traitResourceDir = new File(traitResourceDir, UUID.randomUUID().toString()+File.separator+"resources");
         traitResourceDir.mkdirs();
 
+        String resourceFromDir = (new File(file)).getParent();
 
         while(row) {
 
@@ -321,7 +323,7 @@ class TraitService extends AbstractObjectService {
                     if(traits?.size() == 1)
                         trait = traits[0];
                 } else {
-                    List traits = Trait.executeQuery("select t from Trait t where t.name=? ", [row[traitNameHeaderIndex]]);
+                    List traits = Trait.executeQuery("select t from Trait t where t.name=? ", [row[traitNameHeaderIndex].trim()]);
                     if(traits?.size() == 1)
                         trait = traits[0];
                     //trait = Trait.findByNameAndTaxon(row[traitNameHeaderIndex].trim(), taxon);
@@ -352,13 +354,15 @@ class TraitService extends AbstractObjectService {
                     traitValue.trait = trait;
                     break;
                     case 'value' :
+                    println "====="
+                    println row[index];
                     traitValue.value=row[index].trim();
                     break;
                     case 'value source' : 
                     traitValue.source=row[index].trim()
                     break;
                     case 'value icon' : 
-                    traitValue.icon=migrateIcons(row[index].trim(),traitResourceDir);
+                    traitValue.icon=migrateIcons(row[index].trim(),traitResourceDir, resourceFromDir);
                     break;
                     case 'value definition' : 
                     traitValue.description=row[index].trim()
@@ -420,9 +424,9 @@ class TraitService extends AbstractObjectService {
         allInstanceCountQuery.setProperties(queryParts.queryParams)
         allInstanceCount = allInstanceCountQuery.list()[0]
 
+        if(!queryParts.queryParams.trait) 
         queryParts.queryParams.trait = params.trait;
-
-        return [instanceList:instanceList, instanceTotal:allInstanceCount, queryParams:queryParts.queryParams, activeFilters:queryParts.activeFilters]
+        return [instanceList:instanceList, instanceTotal:allInstanceCount, queryParams:queryParts.queryParams, activeFilters:queryParts.activeFilters, 'traitFactMap':queryParts.traitFactMap, 'object':queryParts.object];
     }
 
     def getFilterQuery(params) {
@@ -433,6 +437,7 @@ class TraitService extends AbstractObjectService {
 
         Map queryParams = [isDeleted : false]
         Map activeFilters = [:]
+        Map r;
 
         String query = "select "
         String taxonQuery = '';
@@ -514,8 +519,11 @@ class TraitService extends AbstractObjectService {
                 activeFilters['classification'] = classification.id;
                 activeFilters['sGroup'] = params.sGroup;
 
-                filterQuery += ' and obv.showInObservation = :showInObservation '
-                queryParams['showInObservation'] = true ;
+                  if(params.showInObservation && params.showInObservation.toBoolean()){
+                 filterQuery += ' and obv.showInObservation = :showInObservation '
+                 queryParams['showInObservation'] = true ; 
+                }
+
  
                 taxonQuery = " left join obv.taxon taxon left join taxon.hierarchies as reg, SpeciesGroupMapping sgm ";
                 query += taxonQuery;
@@ -570,10 +578,31 @@ class TraitService extends AbstractObjectService {
             activeFilters["isParticipatory"] = params.isParticipatory.toBoolean()
         }
 
-        def allInstanceCountQuery = "select count(*) from Trait obv " +taxonQuery+" "+((params.tag)?tagQuery:'')+((params.featureBy)?featureQuery:'')+filterQuery
+        if(params.objectId && params.objectType){
+            Long objectIdL;
+            try {
+                objectIdL = params.long('objectId');
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+            if(objectIdL) {
+                /*query += " , Fact fact "
+                filterQuery += " and fact.objectId = :objectId and fact.objectType = :objectType and fact.isDeleted = false "
+                queryParams["objectId"] = objectIdL;
+                queryParams["objectType"] = params.objectType;
+                activeFilters["objectId"] = objectIdL;
+                activeFilters["objectType"] = params.objectType;
+                */
+                def object = grailsApplication.getDomainClass(params.objectType).clazz.read(objectIdL);
+                r = object.getTraitFacts();
+                queryParams.putAll(r.queryParams);
+                r['object'] = object;
+            }
+        }
 
+        def allInstanceCountQuery = "select count(*) from Trait obv " +taxonQuery+" "+((params.tag)?tagQuery:'')+((params.featureBy)?featureQuery:'')+filterQuery
         orderByClause = " order by " + orderByClause;
-        return [query:query, allInstanceCountQuery:allInstanceCountQuery, filterQuery:filterQuery+groupByQuery, orderByClause:orderByClause, queryParams:queryParams, activeFilters:activeFilters]
+        return [query:query, allInstanceCountQuery:allInstanceCountQuery, filterQuery:filterQuery+groupByQuery, orderByClause:orderByClause, queryParams:queryParams, activeFilters:activeFilters, 'traitFactMap':r?.traitFactMap, 'object':r?.object];
 
     }
 
@@ -684,12 +713,12 @@ class TraitService extends AbstractObjectService {
         return [success:success, url:url, msg:message, errors:errors]
     }
 
-
-    def migrateIcons(icon, usersDir){
+    private String migrateIcons(icon, usersDir, fromDir=null){
         if(!icon) return;
         def rootDir = grailsApplication.config.speciesPortal.traits.rootDir
         File file = utilsService.getUniqueFile(usersDir, Utils.generateSafeFileName(icon));
-        File fi = new File(grailsApplication.config.speciesPortal.content.rootDir +"/trait/"+icon);
+        if(!fromDir) fromDir = grailsApplication.config.speciesPortal.content.rootDir; 
+        File fi = new File(fromDir+"/trait/"+icon);
         (new AntBuilder()).copy(file: fi, tofile: file)
         ImageUtils.createScaledImages(file, usersDir,true);
         def file_name = file.name.toString();

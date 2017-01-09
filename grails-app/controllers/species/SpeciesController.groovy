@@ -256,14 +256,18 @@ class SpeciesController extends AbstractObjectController {
 						redirect(action: "list")
 					}	
 
-                } json { render model as JSON }
+                } 
+                json { render model as JSON }
                 xml { render model as XML }
             }
         }
 		else {
+            Map t = speciesInstance.getTraits();
 
+            /*
             def factList = Fact.findAllByObjectIdAndObjectType(speciesInstance.id, speciesInstance.class.getCanonicalName())
-            def traitList = [];//factList.trait.unique();//traitService.getFilteredList([], -1, -1).instanceList;
+             def traitListValue = traitService.getFilteredList(['sGroup':speciesInstance.guid, 'isNotObservationTrait':true,'taxon':speciesInstance.taxonConcept.id], -1, -1).instanceList;
+            def traitList = [];
             def traitFactMap = [:]
             def queryParams = ['trait':[:]];
             //def conRef = []
@@ -278,10 +282,9 @@ class SpeciesController extends AbstractObjectController {
                     traitFactMap['fact'] << fact.id
                     queryParams['trait'][fact.trait.id] += fact.traitValue.id+',';
             }
-
+            */
 
             if(params.editMode) {
-                println speciesPermissionService.isSpeciesContributor(speciesInstance, springSecurityService.currentUser) || !utilsService.isAdmin()
                 if(!speciesPermissionService.isSpeciesContributor(speciesInstance, springSecurityService.currentUser) && !utilsService.isAdmin()) {
                 	def tmp_var   = params.id?speciesInstance.title+' ( '+params.id+' )':''
 			        flash.message = "${message(code: 'species.contribute.not.permitted.message', args: ['contribute to', message(code: 'species.label', default: 'Species'), tmp_var])}"
@@ -347,7 +350,7 @@ class SpeciesController extends AbstractObjectController {
                     //def instanceTotal = relatedObservations?relatedObservations.count:0
 
                     def filePickerSecurityCodes = utilsService.filePickerSecurityCodes();
-                    result = [speciesInstance: speciesInstance, fields:map, totalObservationInstanceList:[:], queryParams:[max:8, offset:0], 'userGroupWebaddress':params.webaddress, 'userLanguage': userLanguage,fieldFromName:fieldFromName, 'policy' : filePickerSecurityCodes.policy, 'signature': filePickerSecurityCodes.signature, traitInstanceList:traitList, factInstanceList:traitFactMap, queryParams:queryParams, displayAny:false]
+                    result = [speciesInstance: speciesInstance, fields:map, totalObservationInstanceList:[:], queryParams:[max:8, offset:0], 'userGroupWebaddress':params.webaddress, 'userLanguage': userLanguage,fieldFromName:fieldFromName, 'policy' : filePickerSecurityCodes.policy, 'signature': filePickerSecurityCodes.signature, traitInstanceList:t.traitList, factInstanceList:t.traitFactMap, queryParams:t.queryParams, displayAny:false, allTraitList:t.allTraitList]
 
                     if(springSecurityService.currentUser) {
                         SpeciesField newSpeciesFieldInstance = speciesService.createNewSpeciesField(speciesInstance, fields[0], '');

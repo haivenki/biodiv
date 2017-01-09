@@ -23,6 +23,7 @@
 	    <div class="container">
 	    	<h1 class="sci_name">${traitInstance.name}</h1>
 	    	<div id="content" class="super-section">
+	    	<sUser:isAdmin>
 	    							<a class="btn btn-primary pull-right" title="${g.message(code:'title.document.edit')}" style="margin-right: 5px;"
 							href="${uGroup.createLink(controller:'trait', action:'edit', id:traitInstance.id)}">
 							<i class="icon-edit"></i><g:message code="button.edit" /> 
@@ -33,6 +34,7 @@
         <form action="${uGroup.createLink(controller:'trait', action:'flagDeleted')}" method='POST' name='deleteForm'>
             <input type="hidden" name="id" value="${traitInstance.id}" />
         </form>
+        </sUser:isAdmin>
 			    	<table class="table">
 			    		<g:if test="${traitInstance.description}">
 					    	<tr><td><h6>Description</h6></td>
@@ -78,7 +80,7 @@
 			    			    	<h5>Filter by value</h5>
 			    <div class="list" style="clear: both;">
 			    	<div class="trait thumbnail" data-toggle="buttons-radio">
-  	                    <g:render template="/trait/showTraitValuesListTemplate" model="['traitValues':factInstance?factInstance[trait.id]:(editable?null:traitValue), 'displayAny':true, 'traitTypes':traitInstance.traitTypes, 'queryParams':queryParams]"/>
+  	                    <g:render template="/trait/showTraitValuesListTemplate" model="['traitValues':factInstance?factInstance[trait.id]:(editable?null:traitValue), 'displayAny':false,'fromTraitShow':true, 'traitTypes':traitInstance.traitTypes, 'queryParams':queryParams]"/>
 			    	</div>
 			      	 <g:render template="/trait/matchingSpeciesTableTemplate" model="[matchingSpeciesList:matchingSpeciesList, totalCount:totalCount]"/>	
 	    			</div>

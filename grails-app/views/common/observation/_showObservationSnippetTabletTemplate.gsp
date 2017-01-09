@@ -154,38 +154,40 @@ def obvId = observationInstance?.id
                 <g:message code="button.show.all" />
             </div>
     </div>
+    <div style="border:1px solid #FFF;margin-top:4px;border-radius:5px;">
     <ul class="nav nav-tabs nav-justified">
+
         <li class="active"><a href="#${observationInstance.id}_groups" data-toggle="tab">Groups</a></li>
-        <%def traits = observationInstance.getTraits()%>
-        <li class="traits"><a href="#${observationInstance.id}_traits" data-toggle="tab">Traits</a></li>
-        <%Map customFields = observationInstance.getCustomFields()%>
-        <g:if test="${customFields?.size() > 0}">
-        <li class="customFields"><a href="#${observationInstance.id}_customFields" data-toggle="tab">Custom Fields</a></li>
-        </g:if>
-        <li class="comments"><a href="#${observationInstance.id}_comments" data-toggle="tab">Comments</a></li>
+
+        <li><a href="#${observationInstance.id}_traits" data-toggle="tab" class="traits" data-objectId="${observationInstance.id}" data-objectType="${observationInstance.class.getCanonicalName()}" data-sGroup = "${observationInstance.group.id}" data-isObservationTrait="true" data-isParticipatory="true" data-showInObservation="true">Traits</a></li>
+
+        <li><a href="#${observationInstance.id}_customFields" data-toggle="tab" class="customFields" data-objectId="${observationInstance.id}">Custom Fields</a></li>
+
+        <li><a href="#${observationInstance.id}_comments" data-toggle="tab" class="comments" data-objectId="${observationInstance.id}">Comments</a></li>
+
         <g:if test="${!observationInstance.isLocked}">
-        <li>
-    <a href="#${observationInstance.id}_suggestID" data-toggle="tab" class="clickSuggest" style="display:block;" rel="${observationInstance.id}">${g.message(code:'default.reco.clickSuggest')}<i class="icon-chevron-down"></i></a>
-        </li>
+        <li><a href="#${observationInstance.id}_suggestID" data-toggle="tab" class="clickSuggest" style="display:block;" rel="${observationInstance.id}">${g.message(code:'default.reco.clickSuggest')}</a></li>
         </g:if>
     </ul>
-    <div class="tab-content" style="max-height:160px; text-align:left;">
+    <div class="tab-content" style="max-height:160px; text-align:left;overflow:inherit;">
+
         <div class="tab-pane  in active" id="${observationInstance.id}_groups">
             <uGroup:resourceInGroups model="['observationInstance':observationInstance,'isList':true]"  />   
         </div>
-        <div class="tab-pane " id="${observationInstance.id}_traits">
-            <g:render template="/trait/showTraitListTemplate" model="['instanceList':traits.traitList, 'factInstance':traits.traitFactMap, 'instance':observationInstance, displayAny:false, editable:true]"/>
+
+        <div class="tab-pane" id="${observationInstance.id}_traits" style="max-height:160px;overflow:auto;">
+            <span class="progress"><g:message code="msg.loading" /> </span>
         </div>
 
-        <g:if test="${customFields?.size() > 0}">
-            <div class="tab-pane " id="${observationInstance.id}_customFields">
-                    <obv:showCustomFields model="['observationInstance':observationInstance, 'customFields':customFields]"/>
-            </div>
-        </g:if>
-        <div class="tab-pane union-comment" id="${observationInstance.id}_comments">
-            <feed:showAllActivityFeeds model="['rootHolder':observationInstance, feedType:'Specific', refreshType:'manual', 'feedPermission':'editable', 'userLanguage':userLanguage]" />
+        <div class="tab-pane " id="${observationInstance.id}_customFields">
+            <span class="progress"><g:message code="msg.loading" /> </span>
+        </div>
+
+        <div class="tab-pane union-comment" id="${observationInstance.id}_comments" style="width:99%">
+            <feed:showAllActivityFeeds model="['rootHolder':observationInstance, feedType:'Specific', refreshType:'manual', 'feedPermission':'editable', 'userLanguage':userLanguage, 'preLoad':false]" />
             <comment:showAllComments model="['commentHolder':observationInstance, commentType:'super','showCommentList':false, 'userLanguage':userLanguage]" />
         </div>
+
         <g:if test="${!observationInstance.isLocked}">
             <div class="tab-pane " id="${observationInstance.id}_suggestID">
                 <div style="width:98%">
@@ -199,13 +201,14 @@ def obvId = observationInstance?.id
                 <g:renderErrors bean="${recommendationVoteInstance}" as="list" />
                 </div>
                 </g:hasErrors>
-                <div class="addRecommendation_wrap_place">
+                <div class="addRecommendation_wrap_place" style="position:relative;overflow:visible;margin-bottom:40px;">
                 </div>    
 
                 </div>
             </div>
         </g:if>
 
+    </div>
     </div>
 </div>
 
