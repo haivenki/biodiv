@@ -199,7 +199,7 @@ class XMLConverter extends SourceConverter {
 		
 		NameInfo n = new NameInfo(speciesName, rank, index)
 		//getting hir		
-		List taxonNodes = getNodesFromCategory(species.children(), fieldsConfig.AUTHOR_CONTRIBUTED_TAXONOMIC_HIERARCHY);
+		List taxonNodes = getNodesFromCategory(species.children(), fieldsConfig.AUTHOR_CONTRIBUTED_TAXONOMIC_HIERARCHY,true);
 		//println "====== taxon =====>>>>>>>>>>======= " + taxonNodes
 		taxonNodes.each { tn ->
 			rank = getTaxonRank(tn.subcategory.text())
