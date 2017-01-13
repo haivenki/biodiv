@@ -202,15 +202,15 @@ class NamelistService extends AbstractObjectService {
 					
 					ibpResult.each { TaxonomyDefinition t ->
 					    t = TaxonomyDefinition.get(t.id)
-		                def getAcceptedNames = ""
-		                def getAcceptedNameIds = ""
+		                def accNameList = ""
+		                def accNameListIds = ""
 		                if(t.status == NameStatus.SYNONYM){
 		                	def taxonAcceptedNames = t.fetchAcceptedNames().collect{it.name}
-		                	getAcceptedNames = taxonAcceptedNames.join(": ");
+		                	accNameList = taxonAcceptedNames.join(": ");
 		                	def taxonAcceptedIds = t.fetchAcceptedNames().collect{it.id}
-		                	getAcceptedNameIds = taxonAcceptedIds.join(": ");
+		                	accNameListIds = taxonAcceptedIds.join(": ");
 		                }
-						tmpRes << ['match':'IBP', 'name':t.name, 'rank':ScientificName.TaxonomyRank.getTRFromInt(t.rank).value(), 'status': t.status.value(), 'group' : t.group?.name, 'position':t.position.value(),'id':t.id,'acceptedName':getAcceptedNames,'acceptedId':getAcceptedNameIds]
+						tmpRes << ['match':'IBP', 'name':t.name, 'rank':ScientificName.TaxonomyRank.getTRFromInt(t.rank).value(), 'status': t.status.value(), 'group' : t.group?.name, 'position':t.position.value(),'id':t.id,'acceptedName':accNameList,'acceptedId':accNameListIds]
 					}
 					
 					if(!ibpResult && searchType == 'All'){
