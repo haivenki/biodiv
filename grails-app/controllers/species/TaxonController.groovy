@@ -36,6 +36,7 @@ class TaxonController {
     def grailsApplication;
     def messageSource
     def namePermissionService;
+    def speciesPermissionService;
     static allowedMethods = [save: "POST", update: "POST", delete: "POST"]
     //def combinedHierarchy = Classification.findByName(grailsApplication.config.speciesPortal.fields.COMBINED_TAXONOMIC_HIERARCHY);
 
@@ -380,15 +381,23 @@ class TaxonController {
             map['isSpecies'] =  (r.rank == TaxonomyRank.SPECIES.ordinal()) ? true : false           
             if(r.taxonId){
                 //def getAllPermissions = namePermissionService.getAllPermissions(namePermissionService.populateMap([taxon:"" +r.taxonId]));
-                def getAllPermissions = namePermissionService.getAllTaxonUsers(TaxonomyDefinition.read(r.taxonId))
-                def getAllAdmins = namePermissionService.getAllAdmins()
+                def taxonConcept = TaxonomyDefinition.read(r.taxonId);
+                def allNamePermissions = namePermissionService.getAllTaxonUsers(taxonConcept)
+                def allNameAdmins = namePermissionService.getAllAdmins()
+                def allSpeciesPermission = speciesPermissionService.getAllPermissionByTaxon(taxonConcept)
                 def users=[]
-                getAllAdmins.each { nP ->
-                    users << [id:nP.user.id,name:nP.user.name,perm:nP.permission.value(),profile_pic:nP.user.profilePicture(ImageType.SMALL)];
+                allNameAdmins.each { nP ->
+                    users << [id:nP.user.id,name:nP.user.name,perm:nP.permission.value(),profile_pic:nP.user.profilePicture(ImageType.SMALL),permType:'namePermission'];
                 }                
-                getAllPermissions.each { nP ->
-                    users << [id:nP.user.id,name:nP.user.name,perm:nP.permission.value(),profile_pic:nP.user.profilePicture(ImageType.SMALL)];
+                allNamePermissions.each { nP ->
+                    users << [id:nP.user.id,name:nP.user.name,perm:nP.permission.value(),profile_pic:nP.user.profilePicture(ImageType.SMALL),permType:'speciesPermission'];
                 }
+
+                //getting speciesContributors
+                allSpeciesPermission.each { sP ->
+                    users << [id:sP.author.id,name:sP.author.name,perm:sP.permissionType,profile_pic:sP.author.profilePicture(ImageType.SMALL)];
+                }
+
                 map['usersList'] = users;
             }
             if(r.containsKey('isContributor')) {

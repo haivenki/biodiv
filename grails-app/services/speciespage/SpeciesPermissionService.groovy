@@ -53,6 +53,15 @@ class SpeciesPermissionService {
         return result
     }
 
+    List<SUser> getAllPermissionByTaxon(TaxonomyDefinition taxonConcept) {
+        List parentTaxons = taxonConcept.parentTaxon()
+        def res = SpeciesPermission.findAllByTaxonConceptInList(parentTaxons)
+        def result = []
+        res.each { r-> 
+            result.add(r)            
+        }
+        return result
+    }
     boolean addCurator(SUser author, List<Species> species) {
         def result = addUsers(author, species, PermissionType.ROLE_CURATOR)
         return result

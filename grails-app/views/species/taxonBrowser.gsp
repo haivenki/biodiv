@@ -15,7 +15,10 @@
     margin-left:20px;    
 }*/
 .userList{
-    margin-left:2px;
+    margin-left:2px;    
+}
+.namePermission{
+    border-bottom: 5px solid #FF0F4B;
 }
 .userList:first-child { 
     margin-left:20px;
