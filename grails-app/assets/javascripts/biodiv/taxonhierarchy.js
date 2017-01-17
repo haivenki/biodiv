@@ -135,9 +135,11 @@
 
                             if(me.options.action == 'taxonBrowser') {
                                 if(nodeData.original.usersList.length > 0){
+                                    var showPermissionType;
                                     for(var i=0;i<nodeData.original.usersList.length;i++){
                                         var userData = nodeData.original.usersList[i];
-                                        $(obj).append('<span class="userList '+userData['permType']+'"><a title="'+userData['name']+': Taxon '+toTitleCase(userData['perm'].toLowerCase())+'" href="#" onclick="showpopupUser('+userData['id']+','+nodeData.original.taxonid+',\''+userData['perm']+'\');"><img class="'+userData['perm']+'" src="'+userData['profile_pic']+'" /></a></span>');
+                                        var showPermissionType = (userData['permType'] == "namePermission")?"Taxon":"Species";
+                                        $(obj).append('<span class="userList '+userData['permType']+'"><a title="'+userData['name']+': '+showPermissionType+' '+toTitleCase(userData['perm'].toLowerCase())+'" href="#" onclick="showpopupUser('+userData['id']+','+nodeData.original.taxonid+',\''+userData['perm']+'\');"><img class="'+userData['perm']+'" src="'+userData['profile_pic']+'" /></a></span>');
                                     }
                                 }
                             }
