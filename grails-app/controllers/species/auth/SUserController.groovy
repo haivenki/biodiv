@@ -149,6 +149,20 @@ class SUserController extends UserController {
         }
 	}
 
+    def getUserDetails(){
+        def model = []
+        if(params.id) {
+            def SUserInstance = SUser.get(params.long("id"))
+            if (!SUserInstance) {
+                model = utilsService.getErrorModel("${message(code: 'default.not.found.message', args: [message(code: 'SUser.label', default: 'SUser'), params.id])}", SUserInstance, NOT_FOUND.value())                
+            }else{
+                def result = [id:SUserInstance.id,name:SUserInstance.name,icon:SUserInstance.profilePicture(),aboutMe:SUserInstance.aboutMe,occupationType:SUserInstance.occupationType,institutionType:SUserInstance.institutionType,sexType:SUserInstance.sexType,location:SUserInstance.location,dateCreated:SUserInstance.dateCreated]
+                model = utilsService.getSuccessModel("",result, OK.value())
+            }            
+        }
+        render model as JSON
+    }
+
 	def show() {
 		def msg
 		if(!params.id) {

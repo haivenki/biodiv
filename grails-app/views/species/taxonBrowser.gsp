@@ -208,11 +208,36 @@
             var that = $('#showPopUserCtrl');
             that.find('#targetShowUser').attr('href','/user/show/'+userId);
             that.find('#removeTaxonPermission').attr('data-userId',userId).attr('data-taxonId',taxonId).attr('data-perm',perm);
-
-            that.modal('show');
+            $.ajax({
+                url: '/user/getUserDetails',
+                dataType: "json",
+                data: {id:userId},  
+                success: function(data) {
+                    
+                    //$("#showPopUserContainer").html($("#showPopUserTemplate").tmpl(data.instance));
+                    populateUserData(data.instance,that);
+                    that.modal('show');
+                }, error: function(xhr, status, error) {
+                    alert(xhr.responseText);
+                }
+            });
+            
+            //$("#showPopUserContainer").html($("#showPopUserTemplate").tmpl(books));            
             return false;
         }
 
+        function populateUserData(user,that){
+           // alert(user.name);
+            var notProvided = "Not Provided";
+            that.find('.iconContainer').attr('src',user.icon);
+            that.find('.nameContainer').html(user.name);
+            that.find('.sexContainer').html((user.sexType)?user.sexType:notProvided);
+            that.find('.occupationContainer').html((user.occupationType)?user.occupationType:notProvided);
+            that.find('.institutionContainer').html((user.institutionType)?user.institutionType:notProvided);
+            that.find('.locationContainer').html((user.location)?user.location:notProvided);
+            that.find('.sinceContainer').html((user.dateCreated)?user.dateCreated:notProvided);
+            that.find('.aboutContainer').html((user.aboutMe)?user.aboutMe:notProvided);
+        }
         </asset:script>
     </body>
 </html>

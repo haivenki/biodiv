@@ -174,15 +174,53 @@
 
 
 <!-- Show popup -->
+
+</sec:ifAnyGranted>
+
+
 <div class="modal hide fade" id="showPopUserCtrl" tabindex='-1'
             role="dialog" 
             aria-hidden="true">
             
-            <div class="modal-body">                
-                <div class="btn"> <a href="#" id="targetShowUser">Show user</a> </div>
-                <div class="btn" id="removeTaxonPermission" >Remove Permission</div>    
+            <div class="modal-body">     
+                <div class="row-fluid">
+                    <div style="position: absolute;float: left;right: 0;top: 0;max-width: 150px;height:150px;">
+                        <img class="iconContainer" src="http://pamba.strandls.com/biodiv/users/user_large.png">
+                    </div>
+                    <div class="row-fluid">
+                        <div class="span4">Username</div>
+                        <div class="span8 nameContainer" ></div>
+                    </div>
+                    <div class="row-fluid">
+                        <div class="span4">Sex</div>
+                        <div class="span8 sexContainer"></div>
+                    </div>
+                    <div class="row-fluid">
+                        <div class="span4">Occupation</div>
+                        <div class="span8 occupationContainer"></div>
+                    </div>
+                    <div class="row-fluid">
+                        <div class="span4">Institution</div>
+                        <div class="span8 institutionContainer"></div>
+                    </div>
+                    <div class="row-fluid">
+                        <div class="span4">Location</div>
+                        <div class="span8 locationContainer"></div>
+                    </div>
+                    <div class="row-fluid">
+                        <div class="span4">Member Since</div>
+                        <div class="span8 sinceContainer"></div>
+                    </div>
+                    <div class="row-fluid">
+                        <div class="span4">About Me</div>
+                        <div class="span8 aboutContainer"></div>
+                    </div>
+                  </div>
+
+                <div class="btn"> <a href="#" target="_blank" id="targetShowUser">View Profile</a> </div>
+                <sec:ifAnyGranted roles='ROLE_SPECIES_ADMIN,ROLE_ADMIN'>
+                    <div class="btn" id="removeTaxonPermission" >Remove Permission</div>    
+                </sec:ifAnyGranted>
             </div>
             
         </div>
-
-</sec:ifAnyGranted>
