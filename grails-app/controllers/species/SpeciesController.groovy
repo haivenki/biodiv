@@ -737,13 +737,17 @@ class SpeciesController extends AbstractObjectController {
                         result = speciesService.deleteSynonym(sid, speciesFieldId);
                     }
                 } else {
-                    def otherParams = null
-                    if(params.otherParams) {
-                        otherParams = params.otherParams
-                        otherParams['source'] = params.source;
-                        otherParams['contributor'] = params.contributor;
+                    if(params.validate){
+                        def otherParams = null
+                        if(params.otherParams) {
+                            otherParams = params.otherParams
+                            otherParams['source'] = params.source;
+                            otherParams['contributor'] = params.contributor;
+                        }
+                        result = speciesService.updateSynonym(sid, speciesFieldId, relationship, value, otherParams);
+                    }else{
+                        result=['success':false, msg:"Checking!!!",'type':'synonym','data':params];
                     }
-                    result = speciesService.updateSynonym(sid, speciesFieldId, relationship, value, otherParams);
                 }
                 break;
                 case 'commonname':
@@ -1568,6 +1572,7 @@ class SpeciesController extends AbstractObjectController {
                         requestParams.putAll(matchResult.remove("defMatch"))
                         requestParams.put('genusMatchResult', matchResult.genusMatchResult)
                     }
+
                     if(!taxon) {
 						result = [taxonRanks:getTaxonRankForUI(), 'success':true, rank:rank, taxonList:taxonList, canonicalForm:r.canonicalForm, authorYear:r.authorYear, requestParams:requestParams]
 						// no result in ibp so going ahead to create new name

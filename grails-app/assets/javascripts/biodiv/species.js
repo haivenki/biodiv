@@ -848,6 +848,7 @@ function selectLicense($this, i) {
 var initNameEditables = function ($e) {
     initEditables($e);
     initAddables($e);
+    $('.edit_del_syn').show();
     initSynRelSelector($e, synRelSelectorOptions, "Synonym");
     initLangSelector($e, langSelectorOptions, "English");
     $('#commonNames .entry').removeClass('pull-left');
