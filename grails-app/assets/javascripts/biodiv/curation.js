@@ -1171,6 +1171,7 @@ function validateSpeciesSuccessHandler(data, search,synonym){
         if(data.rank >= 9){
            // if species page means goes here 
             if (data.id && !data.namelist) {
+                alert("Species Page found redirecting......");
                 window.location.href = '/species/show/' + data.id + '?editMode=true'
                 return;
             }
@@ -1196,7 +1197,9 @@ function validateSpeciesSuccessHandler(data, search,synonym){
             //if(data.requestParams.taxonRegistry){                
               updateHirInput(data,data.rank);
             //}        
-            genusTaxonMsg = data.requestParams.genusTaxonMsg
+            if(data.requestParams && data.requestParams.genusTaxonMsg){
+                genusTaxonMsg = data.requestParams.genusTaxonMsg
+            }
         }
 
         if(data.rank >= 9){    

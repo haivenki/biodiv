@@ -1451,7 +1451,9 @@ class SpeciesController extends AbstractObjectController {
 			Species species = Species.get(taxon.findSpeciesId());
 			if(!species){
 				species = speciesUploadService.createSpeciesStub(taxon)
-			}
+			}else{
+                result.rank = 9;
+            }
 			result.id = species?.id
 			println "result after create stub " + result
 			render result as JSON
@@ -1573,7 +1575,7 @@ class SpeciesController extends AbstractObjectController {
                         requestParams.put('genusMatchResult', matchResult.genusMatchResult)
                     }
 
-                    if(!taxon) {
+                    //if(!taxon) {
 						result = [taxonRanks:getTaxonRankForUI(), 'success':true, rank:rank, taxonList:taxonList, canonicalForm:r.canonicalForm, authorYear:r.authorYear, requestParams:requestParams]
 						// no result in ibp so going ahead to create new name
 						if(!taxonList){
@@ -1584,7 +1586,7 @@ class SpeciesController extends AbstractObjectController {
 							msg = "Multiple results from IBP search"
 						}
 						result.msg = msg
-                    }
+                    /*}
 					// one result in ibp system so redirecting to species page
 					else {
                         //CHK if a species page exists for this concept
@@ -1609,8 +1611,8 @@ class SpeciesController extends AbstractObjectController {
 							if(!result['taxonRegistry'][classification.name])
 								result['taxonRegistry'][classification.name] = [];
 							result['taxonRegistry'][classification.name] << h
-						}*/
-                    }
+						}
+                    } */
                 } else {
                     result.putAll(r);
                 }
