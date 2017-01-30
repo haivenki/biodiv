@@ -164,12 +164,17 @@
             $(".taxonRank:not(#page)").autofillNames();
 
         $('#validateSpeciesSubmit').click(function() {	
+            if($(this).hasClass('disabled'))
+                return false;
         	var params = {};
             $("#addSpeciesPage input").each(function(index, ele) {
                 if($(ele).val().trim()) params[$(ele).attr('name')] = $(ele).val().trim();
             });
             params['rank'] = $('#rank').find(":selected").val(); 
             setRank=params['rank'];
+
+            $(this).addClass('btn-success').addClass('disabled').removeClass('btn-primary');
+            $(this).html('Validated');
             //Did u mean species 
             $.ajax({
                 url:'/species/validate',
@@ -189,6 +194,11 @@
             // get and autofill author contrib hierarchy
         });
 
+        $('#page').change(function(){         
+            var validateSpeciesSubmit =$(this).parent().find('#validateSpeciesSubmit'); 
+            validateSpeciesSubmit.removeClass('btn-success').removeClass('disabled').addClass('btn-primary');
+            validateSpeciesSubmit.html('Validate');
+        });
         $('#addSpeciesPageSubmit').click(function() {
         	addSpeciesPage("${uGroup.createLink(action:'save', controller:'species', 'userGroup':userGroupInstance, 'userGroupWebaddress':params.webaddress)}");
         });

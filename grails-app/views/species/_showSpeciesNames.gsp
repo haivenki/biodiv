@@ -180,8 +180,7 @@ $(document).ready(function(){
         validSubmit.hide();
     });
 
-    $('.synonym_value').change(function(){ 
-        console.log("ddddddd"); 
+    $('.synonym_value').change(function(){         
         var validateSpeciesSubmit =$(this).parent().find('.validateSpeciesSubmit'); 
         validateSpeciesSubmit.removeClass('btn-success').removeClass('disabled').addClass('btn-primary');
         validateSpeciesSubmit.html('Validate Name');

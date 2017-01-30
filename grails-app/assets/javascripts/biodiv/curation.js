@@ -847,6 +847,11 @@ function openSpeciesPage(taxonId, colId, name,rank,nameStatus,synonym){
         }
         return;
     }
+
+    if(nameStatus == "synonym"){
+        alert("Can't create species page for synonym!!!");
+        return false;        
+    }
     //if(true && )
     //return ;
     var sourceComp = $(".input-prepend.currentTargetName");
@@ -898,6 +903,10 @@ function openSpeciesPage(taxonId, colId, name,rank,nameStatus,synonym){
 
 function addSpeciesPage(url,params){
     var allValidated = true;
+    if(!$('#validateSpeciesSubmit').hasClass('disabled')){
+        alert('Please validated the species name');
+        return false;
+    }
     $("#taxonHierachyInput .input-prepend").each(function(index, ele) {
         allValidated = (allValidated && ($(ele).children('div').hasClass('disabled')));
     });
