@@ -50,6 +50,7 @@ class SUserController extends UserController {
     def messageSource;
     def speciesPermissionService;
     def sessionFactory;
+    def speciesService;
 
 	static allowedMethods = [show:'GET', index:'GET', list:'GET', save: "POST", update: ["POST","PUT"], delete: ["POST", "DELETE"]]
     static defaultAction = "list"
@@ -151,6 +152,7 @@ class SUserController extends UserController {
 
 	def show() {
 		def msg
+        println "paramsssssssssssssssss"+params
 		if(!params.id) {
 			params.id = springSecurityService.currentUser?.id;
         }
@@ -158,6 +160,7 @@ class SUserController extends UserController {
         if(params.webaddress) {
             userGroupInstance = userGroupService.get(params['webaddress'])
         }
+        println "+++++++++++++++++++++++++++++"+userGroupInstance
         def SUserInstance = SUser.get(params.long("id"))
 
         def userLanguage = utilsService.getCurrentLanguage(request);
@@ -1107,6 +1110,10 @@ class SUserController extends UserController {
         render ([success:true, 'appKey':appKey.key, 'msg':'This app key is also sent in an email to your account'] as JSON)
 
     }
+    def downloadStatisticsData(){
+        def userGroupInstance = userGroupService.get(params['webaddress'])
+       return speciesService.downloaduserStatics(userGroupInstance)
+    }
 
 }
 class ResetPasswordCommand {
@@ -1129,4 +1136,5 @@ class ResetPasswordCommand {
 		password blank: false, nullable: false, validator: grails.plugin.springsecurity.ui.RegisterController.passwordValidator
 		password2 validator: RegisterController.password2Validator
 	}
+
 }

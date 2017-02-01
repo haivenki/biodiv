@@ -2809,8 +2809,6 @@ class ObservationService extends AbstractMetadataService {
 		}
         return langToCommonName;
     }
-
-
         long getAllSuggestedRecommendationsOfUser(SUser user , UserGroup userGroupInstance = null) {
         //TODO: filter on usergroup if required
         def sql =  Sql.newInstance(dataSource);
@@ -2818,12 +2816,48 @@ class ObservationService extends AbstractMetadataService {
         if(userGroupInstance){
             result = sql.rows("select count(recoVote) from recommendation_vote recoVote, observation o, user_group_observations ugo where recoVote.author_id = :userId and recoVote.observation_id = o.id and o.is_deleted = :isDeleted and ugo.observation_id = o.id and ugo.user_group_id =:ugId and recoVote.given_common_name!=''",  [userId:user.id, isDeleted:false, ugId:userGroupInstance.id]);
         } else {
+            result = sql.rows("select count(recoVote) from recommendation_vote recoVote, observation o where recoVote.author_id = :userId and recoVote.observation_id = o.id and o.is_deleted = :isDeleted and recoVote.given_common_name!='' and recoVote.given_common_name!=''", [userId:user.id, isDeleted:false]);
+        }
+  //      def result = RecommendationVote.executeQuery("select count(recoVote) from RecommendationVote recoVote where recoVote.author.id = :userId and recoVote.observation.isDeleted = :isDeleted and recoVote.observation.isShowable = :isShowable", [userId:user.id, isDeleted:false, isShowable:true]);
+        return (long)result[0]["count"];
+    }
+        long getAllSuggestedOfUser(SUser user , UserGroup userGroupInstance = null) {
+        //TODO: filter on usergroup if required
+        def sql =  Sql.newInstance(dataSource);
+        def result
+        if(userGroupInstance){
+            result = sql.rows("select count(recoVote) from recommendation_vote recoVote, observation o, user_group_observations ugo where recoVote.author_id = :userId and recoVote.observation_id = o.id and o.is_deleted = :isDeleted and ugo.observation_id = o.id and ugo.user_group_id =:ugId and recoVote.given_common_name!='' and recoVote.common_name_reco_id!=''",  [userId:user.id, isDeleted:false, ugId:userGroupInstance.id]);
+        } else {
             result = sql.rows("select count(recoVote) from recommendation_vote recoVote, observation o where recoVote.author_id = :userId and recoVote.observation_id = o.id and o.is_deleted = :isDeleted and recoVote.given_common_name!=''", [userId:user.id, isDeleted:false]);
         }
   //      def result = RecommendationVote.executeQuery("select count(recoVote) from RecommendationVote recoVote where recoVote.author.id = :userId and recoVote.observation.isDeleted = :isDeleted and recoVote.observation.isShowable = :isShowable", [userId:user.id, isDeleted:false, isShowable:true]);
         return (long)result[0]["count"];
     }
 
+        long getAllAgreedOfUser(SUser user , UserGroup userGroupInstance = null) {
+        //TODO: filter on usergroup if required
+        def sql =  Sql.newInstance(dataSource);
+        def result
+        if(userGroupInstance){
+            result = sql.rows("select count(recoVote) from recommendation_vote recoVote, observation o, user_group_observations ugo where recoVote.author_id = :userId and recoVote.observation_id = o.id and o.is_deleted = :isDeleted and ugo.observation_id = o.id and ugo.user_group_id =:ugId and recoVote.given_common_name='' and recoVote.common_name_reco_id=''",  [userId:user.id, isDeleted:false, ugId:userGroupInstance.id]);
+        } else {
+            result = sql.rows("select count(recoVote) from recommendation_vote recoVote, observation o where recoVote.author_id = :userId and recoVote.observation_id = o.id and o.is_deleted = :isDeleted and recoVote.given_common_name=''", [userId:user.id, isDeleted:false]);
+        }
+  //      def result = RecommendationVote.executeQuery("select count(recoVote) from RecommendationVote recoVote where recoVote.author.id = :userId and recoVote.observation.isDeleted = :isDeleted and recoVote.observation.isShowable = :isShowable", [userId:user.id, isDeleted:false, isShowable:true]);
+        return (long)result[0]["count"];
+    }
+
+    long getAllNoOfMedia(SUser user,UserGroup userGroupInstance = null){
+        def sql =  Sql.newInstance(dataSource);
+        def result
+            result = sql.rows("select sum(no_of_images+no_of_videos+no_of_audio) from observation where author_id=:userId",[userId:user.id]);
+            if(result[0]["sum"]){
+               return result[0]["sum"];
+            }
+            else{
+                return 0;
+            }
+    }
     def getDistinctIdentifiedRecoList(params, int max, int offset) {  
         println "identified params+"+params;
         def sql =  Sql.newInstance(dataSource);

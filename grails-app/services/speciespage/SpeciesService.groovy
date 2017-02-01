@@ -73,6 +73,15 @@ import au.com.bytecode.opencsv.CSVWriter
 import species.utils.ImageType;
 import species.trait.Fact;
 import speciespage.ObvUtilService;
+import species.participation.Comment;
+import species.participation.Discussion;
+import species.participation.Flag;
+import species.participation.Featured;
+import species.participation.ActivityFeed;
+import species.participation.UserStatistics;
+import species.auth.Role;
+import species.groups.UserGroupMemberRole.UserGroupMemberRoleType;
+import species.groups.UserGroupMemberRole;
 
 class SpeciesService extends AbstractObjectService  {
 
@@ -91,6 +100,7 @@ class SpeciesService extends AbstractObjectService  {
     def messageSource;
 	def namelistService;
     def obvUtilService;
+    def observationService
 	
 	static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy hh:mm aaa")
     static int BATCH_SIZE = 10;
@@ -2436,6 +2446,12 @@ def checking(){
          result = sql.rows("select count(DISTINCT b.species_id) from species_field_suser a JOIN species_field b ON a.species_field_contributors_id=b.id AND a.suser_id=:userId",[userId:user.id]);
         return (long)result[0]["count"];
     }
+    def noOfDistinctSpecies(user){
+        def sql =  Sql.newInstance(dataSource);
+        def result
+         result = sql.rows("select count(b.species_id) from species_field_suser a JOIN species_field b ON a.species_field_contributors_id=b.id AND a.suser_id=:userId",[userId:user.id]);
+        return (long)result[0]["count"];        
+    }
     def totalContributedSpeciesSnippet(user){
         def sql =  Sql.newInstance(dataSource);
         def result
@@ -2528,5 +2544,115 @@ def checking(){
                 writer.flush()
                 writer.close()
                 return csvFile
+        }
+
+        private File downloaduserStatics(userGroupInstance){
+                def sql = Sql.newInstance(dataSource)
+                /*File csvFile = new File('/home/ifp/git/biodiv/app-conf/', "userStatic.csv")
+                CSVWriter writer = obvUtilService.getCSVWriter(csvFile.getParent(), csvFile.getName())
+                writer.writeNext("UserId#created#suggested#Oragnized#downloaded#commented".split("#"))*/
+                def userInfo = sql.rows("select * from suser where account_expired=false")
+                def dataToWrite = []
+            userInfo.each {
+                def user=SUser.findById(it.id);
+                def SUserInstance = SUser.get(it.id)
+                println "=================================================="+SUserInstance
+                //Observation Base Score
+                def noOfObvs = observationService.getAllObservationsOfUser(SUserInstance,null);
+                def noOfSugObvs = observationService.getAllSuggestedOfUser(SUserInstance, null);
+                def noOfAgreedObvs = observationService.getAllAgreedOfUser(SUserInstance, null);
+                def noOfObvMedia = observationService.getAllNoOfMedia(SUserInstance,null);
+                def noOfDowObvs = DownloadLog.findAllByAuthorAndSourceType(SUserInstance,"Observation").size();
+                def noOfCommentObvs = Comment.findAllByAuthorAndRootHolderType(SUserInstance,"species.participation.Observation").size();
+                String[] activityType=["Featured","UnFeatured","Posted resource","Document updated","Flagged","obv locked","obv unlocked"]
+                def totalObvOrganized=0;
+                    activityType.each{
+                        def noOfObvOraganized=ActivityFeed.findAllByAuthorAndRootHolderTypeAndActivityType(SUserInstance,'species.participation.Observation',it)
+                        totalObvOrganized=noOfObvOraganized.size()+totalObvOrganized
+                    }
+
+                String[] qualifyActivityType = ["Updated fact","Added a fact","Observation tag updated"]
+                def totalObvQualified = 0;
+                    qualifyActivityType.each{
+                        def noOfObvQualified  = ActivityFeed.findAllByAuthorAndRootHolderTypeAndActivityType(SUserInstance,'species.participation.Observation',it)
+                        noOfObvQualified = noOfObvQualified.size()+totalObvQualified
+                    }
+
+                //Species Base Score
+                def noOfSpecies = noOfDistinctSpecies(SUserInstance)
+                def noOfSpeciesField = totalContributedSpecies(SUserInstance)
+                def noOfAddedSynonym = ActivityFeed.findAllByAuthorAndRootHolderTypeAndActivityType(SUserInstance,'species.species','Added synonym').size();
+                def noOfUpdatedSynonym = ActivityFeed.findAllByAuthorAndRootHolderTypeAndActivityType(SUserInstance,'species.species','Updated synonym').size();
+                String[] speciesActivityType = ["Added common name","Updated Common Name","Added hierarchy","Posted resource","Updated species gallery"]
+                def totalNoOfOrganizedSpecies = 0;
+                speciesActivityType.each{
+                    def noOfOrganizedSpecies = ActivityFeed.findAllByAuthorAndRootHolderTypeAndActivityType(SUserInstance,"species.Species",it);
+                    totalNoOfOrganizedSpecies = noOfOrganizedSpecies.size()+totalNoOfOrganizedSpecies
+                }
+                def noOfSpeciesContributed = noOfSpeciesField + noOfAddedSynonym + noOfUpdatedSynonym;
+                def noOfSpeciesGalleryUpdataed = ActivityFeed.findAllByAuthorAndRootHolderTypeAndActivityType(SUserInstance,'species.Species','Updated species gallery').size();
+                def noOfSpeciesComments = Comment.findAllByAuthorAndRootHolderType(SUserInstance, "species.Species").size();
+
+                def noOfDocsUploaded = Document.findAllByAuthor(SUserInstance).size()
+                String[] docsActivityType=["Featured","UnFeatured","Posted resource","Document updated","Flagged"]
+                def totalDocsOrganized=0;
+                docsActivityType.each{
+                    def noOfDocsOraganized=ActivityFeed.findAllByAuthorAndRootHolderTypeAndActivityType(SUserInstance,"content.eml.Document",it)
+                    totalDocsOrganized=noOfDocsOraganized.size()+totalDocsOrganized
+                }
+                def noOfDocsComments = Comment.findAllByAuthorAndRootHolderType(SUserInstance,"content.eml.Document").size();
+
+                def noOfDiscussionCreated=Discussion.findAllByAuthor(SUserInstance).size()
+                def noOfParticipationDiscussion=ActivityFeed.findAllByAuthorAndRootHolderTypeAndActivityType(SUserInstance,'species.participation.Discussion','Discussion updated').size()
+                def noOfCommentDiscussion = Comment.findAllByAuthorAndRootHolderType(SUserInstance,'species.participation.Discussion').size();
+
+                def founderRole = Role.findByAuthority(UserGroupMemberRoleType.ROLE_USERGROUP_FOUNDER.value())
+                def grpFounder = UserGroupMemberRole.findAllBySUserAndRole(SUserInstance,founderRole).size()
+                def expertRole = Role.findByAuthority(UserGroupMemberRoleType.ROLE_USERGROUP_EXPERT.value())
+                def grpExpert = UserGroupMemberRole.findAllBySUserAndRole(SUserInstance,expertRole).size()
+                def memberRole = Role.findByAuthority(UserGroupMemberRoleType.ROLE_USERGROUP_MEMBER.value())
+                def grpRole = UserGroupMemberRole.findAllBySUserAndRole(SUserInstance,memberRole).size()
+                UserStatistics  staticInstance = new UserStatistics();
+                staticInstance.user = user
+                staticInstance.obvUploaded = noOfObvs
+                staticInstance.obvSuggested = noOfSugObvs
+                staticInstance.obvAgreed = noOfAgreedObvs
+                staticInstance.obvMedia = noOfObvMedia
+                staticInstance.obvQualified = totalObvQualified
+                staticInstance.obvDownloads =  noOfDowObvs
+                staticInstance.obvComments = noOfCommentObvs
+                staticInstance.obvOrganized = totalObvOrganized
+                staticInstance.speciesContributed = noOfSpecies
+                staticInstance.sFiedlContributed = noOfSpeciesContributed
+                staticInstance.sOrganized = totalNoOfOrganizedSpecies
+                staticInstance.sComments = noOfSpeciesComments
+                staticInstance.sGalleryUpdated = noOfSpeciesGalleryUpdataed
+                staticInstance.docUploaded = noOfDocsUploaded
+                staticInstance.docOrganized = totalDocsOrganized
+                staticInstance.docComments = noOfDocsComments
+                staticInstance.disCreated = noOfDiscussionCreated
+                staticInstance.disParticipated = noOfParticipationDiscussion
+                staticInstance.disOrganized = noOfCommentDiscussion
+                staticInstance.grpFounded = grpFounder
+                staticInstance.grpModerating = grpExpert
+                staticInstance.grpMemberof = grpRole
+
+                         if(!staticInstance.save()) {
+                            staticInstance.errors.each {log.error it }
+                        }
+                println staticInstance
+                /*temp.add("" + userId);
+                temp.add("" + noOfObvs);
+                temp.add("" + noOfSugObvs);
+                temp.add("" + noOfDowObvs);
+                temp.add("" + noOfCommentObvs);
+                dataToWrite.add(temp.toArray(new String[0]))
+                println "==================="+dataToWrite*/
+                
+        }
+               /* writer.writeAll(dataToWrite);
+                writer.flush()
+                writer.close()*/
+                return true
         }
 }
