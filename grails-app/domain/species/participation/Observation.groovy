@@ -440,12 +440,15 @@ class Observation extends DataObject {
 	
 	private void updateResources() {
         log.debug "Observation updateResources";
+        int noOfMedia;
 		noOfImages = noOfVideos = noOfAudio = 0;
         resource.each {
             if(it.type == ResourceType.IMAGE) noOfImages++;
             else if(it.type == ResourceType.VIDEO) noOfVideos++;
             else if(it.type == ResourceType.AUDIO) noOfAudio++;
         }
+        noOfMedia++;
+        println "=================================="+noOfMedia;
         utilsService.evictInCache('resources', 'observation-'+this.id);
         updateReprImage();
 	}

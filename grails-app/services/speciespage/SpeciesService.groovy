@@ -2552,6 +2552,7 @@ def checking(){
                 CSVWriter writer = obvUtilService.getCSVWriter(csvFile.getParent(), csvFile.getName())
                 writer.writeNext("UserId#created#suggested#Oragnized#downloaded#commented".split("#"))*/
                 def userInfo = sql.rows("select * from suser where account_expired=false")
+                //def userInfo = ["1426","9895","1"]
                 def dataToWrite = []
             userInfo.each {
                 def user=SUser.findById(it.id);

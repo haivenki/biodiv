@@ -11,7 +11,7 @@ import species.SpeciesField
 import content.eml.Document
 
 import species.NamesMetadata;
-
+import species.participation.UserStatistics;
  
 import org.springframework.context.i18n.LocaleContextHolder as LCH;
 class ActivityFeedService {
@@ -160,10 +160,11 @@ class ActivityFeedService {
 			subRootHolderType = getType(activityHolder)
 			subRootHolderId = (activityHolder.isMainThread())? activityHolder.id : activityHolder.fetchMainThread().id
 		}
-		
 		//if not pass through params hiding object whose isShowable = false. In all other cases making feed showable
 		isShowable= (isShowable != null) ? isShowable : (rootHolder.hasProperty('isShowable') && rootHolder.isShowable != null)? rootHolder.isShowable : true
-        println activityType;
+        scoreCalculate(activityType,author);
+        println "activityHolder"+activityHolder;
+        println "=====================================+++++++++++++++++++++++++++++++++++++"
 		ActivityFeed af = new ActivityFeed(author:author, activityHolderId:activityHolder?.id, \
 						activityHolderType:getType(activityHolder), \
 						rootHolderId:rootHolder?.id, rootHolderType:getType(rootHolder), \
@@ -293,6 +294,8 @@ class ActivityFeedService {
 			case SPECIES_RECOMMENDED:
 				activityTitle = getLocalizedMessage(SPECIES_RECOMMENDED) + " " + (activityDomainObj ? getSpeciesNameHtml(activityDomainObj, params):feedInstance.activityDescrption)
 				text = feedInstance.activityDescrption
+				println "params+++++++++++++++++++++++"+params
+				println "params+++++++++++++++++++++++"+activityDomainObj
 				break
 			case SPECIES_AGREED_ON:
 				activityTitle =  getLocalizedMessage(SPECIES_AGREED_ON) + " " + (activityDomainObj ? getSpeciesNameHtml(activityDomainObj, params):feedInstance.activityDescrption)
@@ -581,6 +584,23 @@ class ActivityFeedService {
 
     def getDescriptionForFeature(r, ug, boolean isFeature)  {
         return utilsService.getDescriptionForFeature(r, ug, isFeature);
+    }
+
+    def scoreCalculate(def activityType,SUser author){
+    	    def scoreUpdate = UserStatistics.findByUser(author);
+    	    switch(activityType) {
+    	     	case getLocalizedMessage(OBSERVATION_CREATED):
+    	     		scoreUpdate.obvUploaded +=1
+    	     	break
+    	     	case getLocalizedMessage(SPECIES_RECOMMENDED) :
+    	     		scoreUpdate.obvSuggested +=1
+    	     	break
+    	     	case getLocalizedMessage(SPECIES_AGREED_ON):
+    	     		 scoreUpdate.obvAgreed +=1
+    	     	break
+    	    }
+
+        		scoreUpdate.save();
     }
 /*
     def getMailSubject(r, isFeature) {
