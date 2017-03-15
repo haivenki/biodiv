@@ -835,6 +835,9 @@ class TraitService extends AbstractObjectService {
         File file = utilsService.getUniqueFile(usersDir, Utils.generateSafeFileName(icon));
         if(!fromDir) fromDir = grailsApplication.config.speciesPortal.content.rootDir; 
         File fi = new File(fromDir+"/trait/"+icon);
+        if(!fi.exists()){
+            return icon;
+        }
         (new AntBuilder()).copy(file: fi, tofile: file)
         ImageUtils.createScaledImages(file, usersDir,true);
         def file_name = file.name.toString();
