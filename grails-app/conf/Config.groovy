@@ -638,6 +638,7 @@ environments {
                         'org.springframework.security.web'
 */
             debug 'species'
+            info    'com.linkedin.grails.ProfilerPlugin'
         }
     }
     pamba {
@@ -867,7 +868,7 @@ environments {
                 image.denied = []
             }
         }
-        log4jConsoleLogLevel = Priority.DEBUG
+        log4jConsoleLogLevel = Priority.INFO
         log4j = {
             appenders {
                 console name:'stdout', layout:pattern(conversionPattern: '%d [%t] %-5p %c - %m%n'), threshold: Priority.DEBUG
@@ -908,9 +909,9 @@ environments {
             info   'grails.app.filters.species.SecurityFilters'
             debug   'grails.app.services.species.participation.DigestService'
             debug   'species.DigestJob'
-            debug   'grails.app.services.speciespage.ObservationService'
-            debug   'grails.app.services.speciespage'
-            debug   'grails.app.services.species'
+            info   'grails.app.services.speciespage.ObservationService'
+            info   'grails.app.services.speciespage'
+            info   'grails.app.services.species'
         }
 
         //grails.resources.mappers.hashandcache.excludes = ['**']
@@ -1736,3 +1737,6 @@ grails {
 */
 grails.assets.bundle=true
 grails.assets.minifyJs=false
+cble.logging = trueors.url.pattern = '/api/*'
+cors.headers = ['Access-Control-Allow-Origin': '*','Access-Control-Allow-Methods': 'GET, HEAD, POST, PUT, TRACE, OPTIONS']
+//cors.enable.logging = true
