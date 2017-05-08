@@ -394,8 +394,10 @@ class Species implements Rateable {
 	 */
 	def clearBasicContent(){
 		//this.resources?.clear();
-		fields.each { sf -> 
-			removeFromFields(sf)
+        def tmp = [] ;
+        tmp.addAll fields;
+		tmp.each { sf -> 
+			this.removeFromFields(sf)
 			def ge = GeographicEntity.read(sf.id)
 			if(ge){
 				s.removeFromGlobalDistributionEntities(ge)
@@ -543,7 +545,7 @@ class Species implements Rateable {
             } else if(fact.value)
                 traitFactMap[fact.trait.id] << fact.value+(fact.toValue?":"+fact.toValue:'')
             if(fact.fromDate && fact.toDate)
-                traitFactMap[fact.trait.id] << fact.fromDate.toString()+":"+fact.toDate.toString()
+                traitFactMap[fact.trait.id] << fact.fromDate.toString()+";"+fact.toDate.toString()
 
             traitFactMap['fact'] << fact.id
         }

@@ -36,7 +36,7 @@ class TaxonController {
     def grailsApplication;
     def messageSource
     def namePermissionService;
-    def speciesPermissionService;
+    def externalLinksService;
     static allowedMethods = [save: "POST", update: "POST", delete: "POST"]
     //def combinedHierarchy = Classification.findByName(grailsApplication.config.speciesPortal.fields.COMBINED_TAXONOMIC_HIERARCHY);
 
@@ -51,7 +51,7 @@ class TaxonController {
      */
     def listHierarchy() {
         //cache "taxonomy_results"
-        includeOriginHeader();
+        //includeOriginHeader();
         int level = params.n_level ? Integer.parseInt(params.n_level)+1 : 0
         def parentId = params.id  ?: null
         def expandAll = params.expand_all  ? (new Boolean(params.expand_all)).booleanValue(): false
@@ -116,7 +116,8 @@ class TaxonController {
         String sqlStr;
 
         long startTime = System.currentTimeMillis();
-
+        Map p = [:];
+        if(position) p['position'] = position;
         if(classSystem) {
             if(!parentId) {
                 sqlStr = "select t.id as taxonid, 1 as count, t.rank as rank, t.name as name, s.path as path, ${classSystem} as classsystem, t.position as position \
@@ -162,7 +163,10 @@ class TaxonController {
                     s.taxon_definition_id = t.id and t.is_deleted = false and "+
                     (position?"t.position = :position and ": "")+
                     "t.rank = 0 group by s.path, t.id, t.name";
-                rs = sql.rows(sqlStr, [position:position])
+                if(p)
+                    rs = sql.rows(sqlStr, p);
+                else    
+                    rs = sql.rows(sqlStr);
             }
             else if(level == TaxonomyRank.SPECIES.ordinal()) {
                 sqlStr = "select t.id as taxonid,  1 as count, t.rank as rank, t.name as name,  s.path as path , ${classSystem} as classsystem, t.position as position\
@@ -172,7 +176,10 @@ class TaxonController {
                     (position?"t.position = :position and ": "")+
                     "t.rank = "+level+" and \
                     s.path ~ '^"+parentId+"_[0-9]+\$' group by s.path, t.id, t.name";
-                rs = sql.rows(sqlStr, [position:position]);
+                if(p)
+                    rs = sql.rows(sqlStr, p);
+                else    
+                    rs = sql.rows(sqlStr);
             } else {
                 sqlStr =  "select t.id as taxonid, 1 as count, t.rank as rank, t.name as name,  s.path as path , ${classSystem} as classsystem, t.position as position\
                     from taxonomy_registry s, \
@@ -182,7 +189,10 @@ class TaxonController {
                     (position?"t.position = :position and ": "")+
                     "s.path ~ '^"+parentId+"_[0-9]+\$' group by s.path, t.rank, t.id, t.name" +
                     " order by t.rank asc, t.name"
-                    rs = sql.rows(sqlStr, [position:position])
+                    if(p)
+                        rs = sql.rows(sqlStr, p);
+                    else    
+                        rs = sql.rows(sqlStr);
             }
         }
         log.debug "Time taken to execute taxon hierarchy query : ${(System.currentTimeMillis()- startTime)/1000}(sec)"
@@ -481,14 +491,12 @@ class TaxonController {
      * @param origin
      * @return
      */
+/*
+    installed cors plugin
     private boolean isValid(String origin) {
         String originHost = (new URL(origin)).getHost();
         return grailsApplication.config.speciesPortal.validCrossDomainOrigins.contains(originHost)
     }
-
-    /**
-     * 
-     */
     private void includeOriginHeader() {
         String origin = request.getHeader("Origin");
         if(origin) {
@@ -499,6 +507,7 @@ class TaxonController {
             response.setHeader("Access-Control-Max-Age", "86400");
         }
     }
+    */
 
 	@Secured(['ROLE_USER'])
     def create() {
@@ -869,6 +878,31 @@ class TaxonController {
             }
 //        }
 
+    }
+
+    @Secured(['ROLE_ADMIN'])
+    def updateExternalLinksFromSheet() {
+        if(params.file) {
+            String file = grailsApplication.config.speciesPortal.content.rootDir+"/species/"+params.file;
+            if(new File(file).exists()) {
+                List<Map> content = SpreadsheetReader.readSpreadSheet(file, 0, 0);
+                content.each { row ->
+                    try {
+                    println row;
+                    TaxonomyDefinition taxonConcept = TaxonomyDefinition.get(Long.parseLong(row.get('taxon id')));
+                    if(taxonConcept) {
+                        println taxonConcept.id+" - "+row.get('link');
+                        externalLinksService.updateExternalLink(taxonConcept, "frlht", row.get('link'), false, new Date());
+                    }
+                    } catch(e) {
+                        e.printStackTrace();
+                    }
+                }
+                utilsService.cleanUpGorm(true);
+                println "======= updateExternalLinksFromSheet DONE";
+            }
+        }
+        render "done"
     }
 }
 

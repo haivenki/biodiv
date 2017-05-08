@@ -44,7 +44,7 @@ class TraitController extends AbstractObjectController {
         if(params.filterable) model.filterable = params.filterable?.toBoolean();
         else model.filterable = true;
         if(params.fromObservationShow) model.fromObservationShow = params.fromObservationShow;
- 
+        if(params.ifOwns) model.ifOwns = params.ifOwns.toBoolean();
         //HACK
         if(params.trait) {
             model.queryParams = ['trait':[:]];
@@ -62,8 +62,6 @@ class TraitController extends AbstractObjectController {
         }
 
         model = utilsService.getSuccessModel('', null, OK.value(), model);
-        println model
-        println model.queryParams
         withFormat {
             html {
                 if(params.loadMore?.toBoolean()){
@@ -94,14 +92,15 @@ class TraitController extends AbstractObjectController {
 
     @Secured(['ROLE_USER'])
     def edit() {
-        def traitInstance = Trait.findByIdAndIsDeleted(params.id,false)
-       Field field;
-       field = Field.findById(traitInstance.fieldId);
+        def traitInstance = Trait.findByIdAndIsDeleted(params.id,false)       ;
         if (!traitInstance) {
             flash.message = "${message(code: 'default.not.found.message', args: [message(code: 'trait.label', default: 'Trait'), params.id])}"
             redirect(uGroup.createLink(action: "list", controller:"trait", 'userGroupWebaddress':params.webaddress))
         }  else {
-            render(view: "create", model: [traitInstance: traitInstance , field: field.concept+'|'+field.category])
+            Language userLanguage = utilsService.getCurrentLanguage(request);
+            Field field;
+            field = Field.findByConnectionAndLanguage(traitInstance.fieldId,userLanguage);
+            render(view: "create", model: [traitInstance: traitInstance , userLanguage:userLanguage,field: field.concept+'|'+field.category])
         }
         return;
     }
@@ -121,24 +120,35 @@ class TraitController extends AbstractObjectController {
         params.isNotObservationTrait = (params.isNotObservationTrait)?true:false;
         params.isParticipatory = (params.isParticipatory)?true:false;
         params.showInObservation = (params.showInObservation)?true:false;
+        params.languageInstance = languageInstance
         
         traitInstance.properties = params;
         def speciesField=params.fieldid.replaceAll(">", "|").trim()
         def fieldInstance=traitService.getField(speciesField,languageInstance)
-        traitInstance.field=fieldInstance
-        traitInstance.taxon.clear()
+        traitInstance.field=Field.get(fieldInstance.connection);
+        traitInstance?.taxon?.clear()       
+        
         if(params.taxonName){
-        def taxonId
-        params.taxonName.each{
-            taxonId=it
-            taxonId = taxonId.substring(taxonId.indexOf("(") + 1);
-            taxonId = taxonId.substring(0, taxonId.indexOf("-"));
-            TaxonomyDefinition taxon = TaxonomyDefinition.findById(taxonId);
-            traitInstance.addToTaxon(taxon);
-        }
-    }
-
+            def taxonId
+            params.taxonName = !String.isCase(params.taxonName)?params.taxonName:[params.taxonName];
+            params.taxonName.each{
+                taxonId=it
+                taxonId = taxonId.substring(taxonId.indexOf("(") + 1);                    
+                taxonId = taxonId.substring(0, taxonId.indexOf("-"));                
+                TaxonomyDefinition taxon = TaxonomyDefinition.findById(taxonId);
+                traitInstance.addToTaxon(taxon);
+            }
+        }        
         if (!traitInstance.hasErrors() && traitInstance.save(flush: true)) {
+            def traitTransInstance= TraitTranslation.findByTraitAndLanguage(traitInstance,params.languageInstance);
+                if(!traitTransInstance)
+                    traitTransInstance = new TraitTranslation();
+            traitTransInstance.name = traitInstance.name
+            traitTransInstance.description = traitInstance.description
+            traitTransInstance.source = traitInstance.source
+            traitTransInstance.language=languageInstance
+            traitTransInstance.trait=traitInstance
+            traitTransInstance.save(flush: true)
             msg = "${message(code: 'default.updated.message', args: [message(code: 'trait.label', default: 'Trait'), traitInstance.id])}"
             def model = utilsService.getSuccessModel(msg, traitInstance, OK.value());
             if(params.action=='update'){
@@ -229,31 +239,49 @@ class TraitController extends AbstractObjectController {
 
     def show() {
         Trait traitInstance = Trait.findByIdAndIsDeleted(params.id,false)
+        Language userLanguage = utilsService.getCurrentLanguage(request);
         String msg;
         if(traitInstance) {
             def coverage = traitInstance.taxon
             def traitValue = [];
             Field field;
+            def traitTrans = TraitTranslation.findByTraitAndLanguage(traitInstance,userLanguage);
+                traitInstance.name = (traitTrans?.name)?:'';
+                traitInstance.description = (traitTrans?.description)?:'';
+                traitInstance.source = (traitTrans?.source)?:'';
             traitValue = TraitValue.findAllByTraitAndIsDeleted(traitInstance,false);
+            def traitValueRes = []
+            traitValue.each{ tv ->
+            def traitValTrans = TraitValueTranslation.findByTraitValueAndLanguage(tv,userLanguage);
+                if(traitValTrans){
+                    tv.value = (traitValTrans?.value)?:'';
+                    tv.description = (traitValTrans?.description)?:'';
+                    tv.source = (traitValTrans?.source)?:'';
+                    traitValueRes << tv;
+                }
+            }
             field = Field.findById(traitInstance.fieldId);
             def model = getList(params);
             model['traitInstance'] = traitInstance
             model['coverage'] = coverage*.name
-            model['traitValue'] = traitValue
+            model['traitValue'] = traitValueRes
             model['field'] = field.concept
-            if(traitInstance.dataTypes == DataTypes.NUMERIC) {
-            Sql sql = Sql.newInstance(dataSource);
-            List numericTraitMinMax =  sql.rows("""
-            select min(f.value::float),max(f.to_value::float),t.id from fact f,trait t where f.trait_id = t.id and t.data_types='NUMERIC' and t.id=:traitId group by t.id;
-            """, [traitId:traitInstance.id]);
-            println numericTraitMinMax;
-            println "+++++++++++++++++++"
-            println "+++++++++++++++++++"
-            println "+++++++++++++++++++"
-            println "+++++++++++++++++++"
-            model['numericTraitMinMax'] = numericTraitMinMax;
-            }
+            model['userLanguage']=userLanguage
 
+            //HACK
+            if(params.trait) {
+                model.queryParams = ['trait':[:]];
+                params.trait.each { t,v ->
+                    model.queryParams.trait[Long.parseLong(t)] = v
+                }
+            }
+            if(traitInstance.dataTypes == DataTypes.NUMERIC) {
+                Sql sql = Sql.newInstance(dataSource);
+                List numericTraitMinMax =  sql.rows("""
+                select min(f.value::float)::integer,max(f.to_value::float)::integer,t.id from fact f,trait t where f.trait_id = t.id and t.data_types='NUMERIC' and t.id=:traitId group by t.id;
+                """, [traitId:traitInstance.id]);
+                model['numericTraitMinMax'] = numericTraitMinMax[0];
+            }
             withFormat {
                 html {
                     render (view:"show", model:model)
@@ -333,6 +361,7 @@ class TraitController extends AbstractObjectController {
 
     def updateTraitValue(){
         TraitValue traitValueInstance;
+        Language userLanguage = utilsService.getCurrentLanguage(request);
         if(params.traitValueId){
             traitValueInstance = TraitValue.findById(params.traitValueId);
             traitValueInstance.value = params.value
@@ -350,6 +379,7 @@ class TraitController extends AbstractObjectController {
         }
         if (!traitValueInstance.hasErrors() && traitValueInstance.save(flush: true)) {
             def msg = "Trait Value Added Successfully"
+            traitService.updateTraitValueTranslation(traitValueInstance,userLanguage);
             flash.message=msg
             return
         }

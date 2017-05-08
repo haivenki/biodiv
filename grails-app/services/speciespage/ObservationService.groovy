@@ -1142,7 +1142,7 @@ class ObservationService extends AbstractMetadataService {
         def userGroupQuery = " ", tagQuery = '', featureQuery = '', nearByRelatedObvQuery = '', taxonQuery = '', traitQuery = '', recoQuery='';
         def filterQuery = " where obv.is_deleted = false "
  
-        if(!params.sort || params.sort == 'score') {
+        if(!params.sort || params.sort == 'score' || params.sort.toLowerCase() == 'lastrevised') {
             params.sort = "lastRevised"
         }
         def m = sessionFactory.getClassMetadata(Observation);
@@ -1184,7 +1184,7 @@ class ObservationService extends AbstractMetadataService {
                 //featureQuery = " join (select f.objectId, f.objectType from Featured f group by f.objectType, f.objectId) as feat"
               //  featureQuery = ", select distinct Featured.objectId from Featured where Featured.objectType = :featType as feat "
             } else {
-                featureQuery = ", Featured feat "
+                featureQuery = " join Featured feat on obv.id = feat.object_id "
             }
             query += featureQuery;
             //filterQuery += " and obv.featureCount > 0 "

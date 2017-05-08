@@ -6,6 +6,8 @@ import species.UtilsService;
 import species.Classification;
 import species.SynonymsMerged;
 import grails.util.Holders;
+import species.Language;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 class Trait {
 
@@ -133,7 +135,7 @@ class Trait {
     boolean isParticipatory = true;
     boolean showInObservation = false;
 
-    static hasMany = [taxon:TaxonomyDefinition]
+    static hasMany = [taxon:TaxonomyDefinition,traitTranslations:TraitTranslation]   
 
     static constraints = {
         name nullable:false, blank:false
@@ -270,4 +272,5 @@ class Trait {
     List values() {
         return TraitValue.findAllByTrait(this);
     }
+    
 }

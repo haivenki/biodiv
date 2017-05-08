@@ -43,7 +43,6 @@ class Fact {
         attribution type:"text"
         id  generator:'org.hibernate.id.enhanced.SequenceStyleGenerator', params:[sequence_name: "fact_id_seq"] 
     }
-
     String getActivityDescription() {
         return trait.name +':'+ traitValue.value;
     }
