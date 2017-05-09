@@ -456,8 +456,8 @@ function uploadSpecies(url){
     delete hm["undefined"];
     var orderedArray = $('#columnOrder').val();
     var searchType = 'All'
-    if(document.getElementById('searchType').checked){
-        searchType = document.getElementById('searchType').value;
+    if($(".searchType").is(':checked')){
+        searchType = $(".searchType").val();
     }
     orderedArray = JSON.stringify(orderedArray);
     var headerMarkers = JSON.stringify(hm);

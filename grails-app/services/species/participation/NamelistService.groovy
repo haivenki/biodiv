@@ -198,22 +198,26 @@ class NamelistService extends AbstractObjectService {
 					}
 										
 					def useAuthoryear = (searchType == 'All')?true:false;
-					List ibpResult = searchIBP(name.canonicalForm, name.authorYear, null, names[i].rank, false, name.normalizedForm, useAuthoryear)
+
+					List ibpResult;
+					if(!ibpResult && searchType == 'All' && searchType == 'IBP' ){
+					    ibpResult = searchIBP(name.canonicalForm, name.authorYear, null, names[i].rank, false, name.normalizedForm, useAuthoryear)
 					
-					ibpResult.each { TaxonomyDefinition t ->
-					    t = TaxonomyDefinition.get(t.id)
-		                def accNameList = ""
-		                def accNameListIds = ""
-		                if(t.status == NameStatus.SYNONYM){
-		                	def taxonAcceptedNames = t.fetchAcceptedNames().collect{it.name}
-		                	accNameList = taxonAcceptedNames.join(": ");
-		                	def taxonAcceptedIds = t.fetchAcceptedNames().collect{it.id}
-		                	accNameListIds = taxonAcceptedIds.join(": ");
-		                }
-						tmpRes << ['match':'IBP', 'name':t.name, 'rank':ScientificName.TaxonomyRank.getTRFromInt(t.rank).value(), 'status': t.status.value(), 'group' : t.group?.name, 'position':t.position.value(),'id':t.id,'acceptedName':accNameList,'acceptedId':accNameListIds]
+						ibpResult.each { TaxonomyDefinition t ->
+						    t = TaxonomyDefinition.get(t.id)
+			                def accNameList = ""
+			                def accNameListIds = ""
+			                if(t.status == NameStatus.SYNONYM){
+			                	def taxonAcceptedNames = t.fetchAcceptedNames().collect{it.name}
+			                	accNameList = taxonAcceptedNames.join(": ");
+			                	def taxonAcceptedIds = t.fetchAcceptedNames().collect{it.id}
+			                	accNameListIds = taxonAcceptedIds.join(": ");
+			                }
+							tmpRes << ['match':'IBP', 'name':t.name, 'rank':ScientificName.TaxonomyRank.getTRFromInt(t.rank).value(), 'status': t.status.value(), 'group' : t.group?.name, 'position':t.position.value(),'id':t.id,'acceptedName':accNameList,'acceptedId':accNameListIds]
+						}
 					}
 					
-					if(!ibpResult && searchType == 'All'){
+					if(!ibpResult && searchType == 'All' && searchType == 'COL' ){
 						List colResult = searchCOL(name.canonicalForm, 'name');
 						colResult.each { t ->
 							boolean addToList = true
