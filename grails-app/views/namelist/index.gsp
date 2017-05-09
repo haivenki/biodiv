@@ -72,9 +72,7 @@
   width: 100%;
   list-style-image: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7);
 }
-.editNameAttr{
-    margin-left: 60px;
-}
+
 #taxonHierarchyModal .control-label{
     text-align:right;
 }
@@ -273,7 +271,7 @@
         </div>
         <sUser:isAdmin>
         <div class="span4 offset8 clickSelectedRowWrap" style="margin-bottom: 10px;display:none;">
-            <div class="btn btn-primary btn-large clickSelectedRow">Action on selected names</div>
+            <div class="btn btn-primary clickSelectedRow">Action on selected names</div>
         </div>
         </sUser:isAdmin>
         <div class="row-fluid metadataDetails namelist_wrapper">
@@ -502,7 +500,8 @@
                     </table>
                     <sUser:isAdmin>
                     <div>
-                        <div class="btn btn-primary btn-large editNameAttr">Edit Name Attributes</div>
+                        <div class="btn btn-primary editNameAttr">Edit Name Attributes</div>
+                        <div class="btn btn-danger delNameAttr" onclick="deleteSourceName($(this),1);">Delete Name</div>
                         <!--button id="saveNameDetails" type="button" class="canBeDisabled btn btn-primary input-block-level pull-right" onClick='saveNameDetails(false, false, false)' style="margin-right:2px;">Save </button --> 
                     </div>
                     </sUser:isAdmin>

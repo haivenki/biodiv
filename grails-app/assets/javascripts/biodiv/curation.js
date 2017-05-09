@@ -2197,13 +2197,13 @@ if(taxonGrid){
         return false;
 }
 
-function deleteSourceName(me){
-
-    if(Object.keys(taxonGridSelectedRow).length == 0)
+function deleteSourceName(me,iD){
+    iD = typeof iD == 'undefined' ? 0 : iD;
+    if(Object.keys(taxonGridSelectedRow).length == 0 && iD > 0)
         return false;
 
-
-    var params ={ ids:Object.keys(taxonGridSelectedRow).toString()}
+    iD = iD > 0 ? $('.taxonId').val() : Object.keys(taxonGridSelectedRow).toString();
+    var params ={ ids:iD}
 
         $.ajax({
             url: '/namelist/deleteName',
