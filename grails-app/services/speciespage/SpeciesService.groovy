@@ -1414,7 +1414,7 @@ class SpeciesService extends AbstractObjectService  {
 		if(colId){
 			td = namelistService.createNameFromColId(colId, false)
 		}else{
-			td = converter.getTaxonConceptFromName(speciesName, rank);
+			td = converter.getTaxonConceptFromName(speciesName, rank,true,null,true);
 		}
 		speciesInstance.taxonConcept = td
 		if(speciesInstance.taxonConcept) {

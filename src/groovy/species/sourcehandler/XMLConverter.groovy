@@ -2463,7 +2463,7 @@ class XMLConverter extends SourceConverter {
      * @param s
      * @return
      */
-    TaxonomyDefinition getTaxonConceptFromName(String sciName, int rank, boolean createNew = true, Node nameNode = null) {
+    TaxonomyDefinition getTaxonConceptFromName(String sciName, int rank, boolean createNew = true, Node nameNode = null, boolean useAuthorYear = false) {
 		def cleanSciName = Utils.cleanSciName(sciName);
 
         if(cleanSciName) {
@@ -2478,7 +2478,7 @@ class XMLConverter extends SourceConverter {
 			}
 			
             if(name[0].normalizedForm) {
-				List taxonList = NamelistService.searchIBP(name[0].canonicalForm, name[0].authorYear, null, rank, false, name[0].normalizedForm)
+				List taxonList = NamelistService.searchIBP(name[0].canonicalForm, name[0].authorYear, null, rank, false, name[0].normalizedForm,useAuthorYear)
 				if(taxonList.size() > 1){
 					log.error '############  ' + "IBP search returning mulitiple result: should not happen " + taxonList
 				}
